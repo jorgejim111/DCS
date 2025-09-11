@@ -132,6 +132,8 @@ La autenticación se realiza con JWT y las contraseñas se almacenan con bcrypt.
 - [changelog.md](./changelog.md)
 - [contributing.md](./contributing.md)
 
+
+
 ---
 
 ## Nota final

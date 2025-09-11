@@ -132,7 +132,21 @@ La autenticación se realiza con JWT y las contraseñas se almacenan con bcrypt.
 - [changelog.md](./changelog.md)
 - [contributing.md](./contributing.md)
 
+---
 
+## Nota de idioma
+
+El sistema y la interfaz de usuario estarán en inglés, ya que el desarrollo es para Canadá. La documentación y el chat de soporte pueden estar en español para facilitar la comunicación interna.
+
+## Componente base de navegación (AdminNav)
+
+El frontend incluye un componente de navegación superior reutilizable (`AdminNav.jsx`) con:
+- Logo de la empresa y texto “Die Control System” a la izquierda
+- “Welcome Admin (username)” como link a perfil
+- Link “Home” a la página principal
+- Botón “Logout”
+
+Este componente asegura coherencia visual y funcional en todas las vistas administrativas.
 
 ---
 

@@ -3,6 +3,9 @@ const yup = require('yup');
 
 const productSchema = yup.object().shape({
   name: yup.string().required('Name is required'),
+  die_description_id: yup.number().required('Die Description is required'),
+  material_id: yup.number().required('Material is required'),
+  is_active: yup.boolean().default(true),
 });
 
 module.exports = {
@@ -29,9 +32,9 @@ module.exports = {
   async create(req, res) {
     try {
       await productSchema.validate(req.body);
-      const { name } = req.body;
-      const newProduct = await ProductCatalog.create({ name, is_active: true });
-      res.status(201).json(newProduct);
+  const { name, die_description_id, material_id, is_active } = req.body;
+  const newProduct = await ProductCatalog.create({ name, die_description_id, material_id, is_active: is_active ?? true });
+  res.status(201).json(newProduct);
     } catch (error) {
       res.status(400).json({ error: 'Validation or creation error', details: error.message });
     }
@@ -39,9 +42,17 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
+      // Si solo se está actualizando is_active, no validar el esquema completo
+      if (Object.keys(req.body).length === 1 && req.body.hasOwnProperty('is_active')) {
+        const updated = await ProductCatalog.update(id, { is_active: req.body.is_active });
+        if (!updated) {
+          return res.status(404).json({ error: 'Product not found' });
+        }
+        return res.json({ message: 'Product updated' });
+      }
       await productSchema.validate(req.body);
-      const { name } = req.body;
-      const updated = await ProductCatalog.update(id, { name });
+      const { name, die_description_id, material_id, is_active } = req.body;
+      const updated = await ProductCatalog.update(id, { name, die_description_id, material_id, is_active });
       if (!updated) {
         return res.status(404).json({ error: 'Product not found' });
       }

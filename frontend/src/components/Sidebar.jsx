@@ -7,6 +7,7 @@ const menuItems = [
     subItems: [
       { name: 'Line', path: '/admin/line' },
       { name: 'Product', path: '/admin/product' },
+  { name: 'Die Description', path: '/admin/die-description' },
       { name: 'Status', path: '/admin/status' },
       { name: 'Description DR', path: '/admin/description-dr' },
       { name: 'Explanation', path: '/admin/explanation' },

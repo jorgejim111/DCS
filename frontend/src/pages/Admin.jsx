@@ -7,6 +7,8 @@ import DescriptionCatalog from './DescriptionCatalog';
 import StatusCatalog from './StatusCatalog';
 import PositionCatalog from './PositionCatalog';
 import LineCatalog from './LineCatalog';
+import ProductCatalog from './ProductCatalog';
+import DieDescriptionCatalog from './DieDescriptionCatalog';
 import DescriptionDrCatalog from './DescriptionDrCatalog';
 import ExplanationCatalog from './ExplanationCatalog';
 import RoleCatalog from './RoleCatalog';
@@ -38,6 +40,8 @@ const Admin = () => {
   <Route path="inch" element={<InchCatalog />} />
   <Route path="part" element={<PartCatalog />} />
   <Route path="description" element={<DescriptionCatalog />} />
+  <Route path="product" element={<ProductCatalog />} />
+    <Route path="die-description" element={<DieDescriptionCatalog />} />
   <Route path="status" element={<StatusCatalog />} />
   <Route path="position" element={<PositionCatalog />} />
   <Route path="line" element={<LineCatalog />} />

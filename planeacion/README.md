@@ -1,3 +1,20 @@
+# Avances y recomendaciones (12/sep/2025)
+
+**Catálogo Die Description:**
+- Vista y backend corregidos para mostrar nombres legibles en la tabla (Inch, Part, Description).
+- Botón Activate/Deactivate funcional: solo cambia el campo is_active y refresca la tabla automáticamente.
+- Modal reutilizable para agregar/editar, con campos y labels en inglés.
+- Validación backend permite actualizar solo is_active sin requerir otros campos.
+- Seguridad y roles aplicados en endpoints y frontend.
+- Todos los cambios siguen el patrón de diseño y funcionalidad descrito arriba.
+
+**Recomendaciones para programar el resto de las vistas:**
+- Usa el mismo patrón: tabla con todos los registros, botones Edit y Activate/Deactivate, modal reutilizable.
+- Asegúrate de que los endpoints permitan actualizar solo is_active.
+- Mantén los labels y mensajes en inglés en la interfaz.
+- Refresca la tabla automáticamente después de cada acción.
+- Aplica validaciones backend flexibles para cambios de estado.
+- Consulta este README antes de programar cada catálogo para mantener coherencia y calidad.
 ## Catálogos: patrón de diseño y funcionalidad
 
 Todas las vistas de catálogos deben seguir este patrón para asegurar coherencia visual y funcional:

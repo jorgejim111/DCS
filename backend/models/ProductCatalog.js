@@ -15,7 +15,14 @@ class ProductCatalog {
   static async findAll() {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM product_catalog WHERE is_active = TRUE', (err, results) => {
+      db.query(`
+        SELECT p.id, p.name, p.is_active,
+               d.die_description AS die_description,
+               m.name AS material
+        FROM product_catalog p
+        LEFT JOIN die_description d ON p.die_description_id = d.id
+        LEFT JOIN material_catalog m ON p.material_id = m.id
+      `, (err, results) => {
         db.end();
         if (err) return reject(err);
         resolve(results);
@@ -23,25 +30,47 @@ class ProductCatalog {
     });
   }
 
-  static async create(name) {
+  static async create({ name, die_description_id, material_id, is_active }) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('INSERT INTO product_catalog (name) VALUES (?)', [name], (err, results) => {
-        db.end();
-        if (err) return reject(err);
-        resolve(results.insertId);
-      });
+      db.query(
+        'INSERT INTO product_catalog (name, die_description_id, material_id, is_active) VALUES (?, ?, ?, ?)',
+        [name, die_description_id, material_id, is_active],
+        (err, results) => {
+          db.end();
+          if (err) return reject(err);
+          resolve(results.insertId);
+        }
+      );
     });
   }
 
-  static async update(id, name) {
+  static async update(id, data) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('UPDATE product_catalog SET name = ? WHERE id = ?', [name, id], (err, results) => {
-        db.end();
-        if (err) return reject(err);
-        resolve(results.affectedRows > 0);
-      });
+      // Si solo se pasa is_active, actualiza solo ese campo
+      if (Object.keys(data).length === 1 && data.hasOwnProperty('is_active')) {
+        db.query(
+          'UPDATE product_catalog SET is_active = ? WHERE id = ?',
+          [data.is_active, id],
+          (err, results) => {
+            db.end();
+            if (err) return reject(err);
+            resolve(results.affectedRows > 0);
+          }
+        );
+      } else {
+        const { name, die_description_id, material_id, is_active } = data;
+        db.query(
+          'UPDATE product_catalog SET name = ?, die_description_id = ?, material_id = ?, is_active = ? WHERE id = ?',
+          [name, die_description_id, material_id, is_active, id],
+          (err, results) => {
+            db.end();
+            if (err) return reject(err);
+            resolve(results.affectedRows > 0);
+          }
+        );
+      }
     });
   }
 

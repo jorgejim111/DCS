@@ -9,7 +9,8 @@ const dieDescriptionSchema = yup.object().shape({
 module.exports = {
   async getAll(req, res) {
     try {
-      const descriptions = await DieDescription.findAll({ where: { is_active: true } });
+  // Mostrar todos los registros, activos e inactivos
+  const descriptions = await DieDescription.findAll();
       res.json(descriptions);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching die descriptions', details: error.message });
@@ -40,8 +41,17 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      await dieDescriptionSchema.validate(req.body);
       const data = req.body;
+      // Si solo se envía is_active, no validar con yup
+      if (Object.keys(data).length === 1 && data.hasOwnProperty('is_active')) {
+        const updated = await DieDescription.update(id, data);
+        if (!updated) {
+          return res.status(404).json({ error: 'Die description not found' });
+        }
+        return res.json({ message: 'Die description status updated' });
+      }
+      // Si se envían más campos, validar normalmente
+      await dieDescriptionSchema.validate(data);
       const updated = await DieDescription.update(id, data);
       if (!updated) {
         return res.status(404).json({ error: 'Die description not found' });
@@ -61,6 +71,30 @@ module.exports = {
       res.json({ message: 'Die description marked as inactive' });
     } catch (error) {
       res.status(500).json({ error: 'Error deleting die description', details: error.message });
+    }
+  },
+  async activate(req, res) {
+    try {
+      const { id } = req.params;
+      const updated = await DieDescription.updateActive(id, true);
+      if (!updated) {
+        return res.status(404).json({ error: 'Die description not found' });
+      }
+      res.json({ message: 'Die description activated' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error activating die description', details: error.message });
+    }
+  },
+  async deactivate(req, res) {
+    try {
+      const { id } = req.params;
+      const updated = await DieDescription.updateActive(id, false);
+      if (!updated) {
+        return res.status(404).json({ error: 'Die description not found' });
+      }
+      res.json({ message: 'Die description deactivated' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error deactivating die description', details: error.message });
     }
   },
 };

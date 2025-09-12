@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BaseTable from '../components/BaseTable';
-import { getInches, updateInch, createInch } from '../services/inchService';
+import { getDescriptionDrs, updateDescriptionDr, createDescriptionDr } from '../services/descriptionDrService';
+import { useNavigate } from 'react-router-dom';
 
 const columns = [
-  { key: 'name', label: 'Inch Diameter' }
+  { key: 'name', label: 'Description DR' }
 ];
 
-const InchCatalog = () => {
+const DescriptionDrCatalog = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchAllInches = async () => {
+  const fetchAllDescriptionDrs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await getInches(token);
-      setData(response);
+      const drs = await getDescriptionDrs(token);
+      setData(drs);
     } catch (err) {
       if (err?.response?.status === 403) {
         navigate('/');
@@ -29,28 +29,28 @@ const InchCatalog = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetchAllInches().finally(() => setLoading(false));
+    fetchAllDescriptionDrs().finally(() => setLoading(false));
   }, []);
 
   const handleEdit = async (row) => {
     try {
       const token = localStorage.getItem('token');
       if (row.id) {
-        await updateInch(row.id, { name: row.name }, token);
+        await updateDescriptionDr(row.id, { name: row.name }, token);
       } else {
-        await createInch({ name: row.name, is_active: 1 }, token);
+        await createDescriptionDr({ name: row.name, is_active: 1 }, token);
       }
-      await fetchAllInches();
+      await fetchAllDescriptionDrs();
     } catch (err) {
-      setError('Error saving inch');
+      setError('Error saving description DR');
     }
   };
 
   const handleToggleActive = async (row) => {
     try {
       const token = localStorage.getItem('token');
-      await updateInch(row.id, { is_active: !row.is_active }, token);
-      await fetchAllInches();
+      await updateDescriptionDr(row.id, { is_active: !row.is_active }, token);
+      await fetchAllDescriptionDrs();
     } catch (err) {
       setError('Error updating status');
     }
@@ -61,7 +61,7 @@ const InchCatalog = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4 text-[#0C2C65]">Inch Catalog</h2>
+      <h2 className="text-xl font-bold mb-4 text-[#0C2C65]">Description DR Catalog</h2>
       <BaseTable
         columns={columns}
         data={data}
@@ -73,4 +73,4 @@ const InchCatalog = () => {
   );
 };
 
-export default InchCatalog;
+export default DescriptionDrCatalog;

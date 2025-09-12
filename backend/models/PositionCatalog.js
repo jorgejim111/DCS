@@ -1,6 +1,16 @@
 const getConnection = require('../db/connection');
 
 class PositionCatalog {
+  static async findAllRaw() {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM position_catalog', (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
   static async findById(id) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
@@ -38,8 +48,26 @@ class PositionCatalog {
 
   static async update(id, name) {
     const db = getConnection();
+    let query = 'UPDATE position_catalog SET ';
+    let params = [];
+    if (typeof name === 'object') {
+      const fields = [];
+      if ('name' in name && name.name !== undefined) {
+        fields.push('name = ?');
+        params.push(name.name);
+      }
+      if ('is_active' in name) {
+        fields.push('is_active = ?');
+        params.push(name.is_active);
+      }
+      query += fields.join(', ') + ' WHERE id = ?';
+      params.push(id);
+    } else {
+      query += 'name = ? WHERE id = ?';
+      params = [name, id];
+    }
     return new Promise((resolve, reject) => {
-      db.query('UPDATE position_catalog SET name = ? WHERE id = ?', [name, id], (err, results) => {
+      db.query(query, params, (err, results) => {
         db.end();
         if (err) return reject(err);
         resolve(results.affectedRows > 0);

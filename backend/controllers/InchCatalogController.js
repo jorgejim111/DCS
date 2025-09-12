@@ -1,3 +1,5 @@
+  // ...existing code...
+
 const InchCatalog = require('../models/InchCatalog');
 const yup = require('yup');
 
@@ -6,6 +8,14 @@ const inchSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getAllRaw(req, res) {
+    try {
+      const inches = await InchCatalog.findAllRaw();
+      res.json(inches);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all inches', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
       const inches = await InchCatalog.findAll({ where: { is_active: true } });
@@ -39,13 +49,26 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      await inchSchema.validate(req.body);
-      const { name } = req.body;
-      const updated = await InchCatalog.update(id, { name });
-      if (!updated) {
-        return res.status(404).json({ error: 'Inch not found' });
+      // Si solo se envía is_active, activar/desactivar
+      if ('is_active' in req.body && Object.keys(req.body).length === 1) {
+        const updated = await InchCatalog.update(id, { is_active: req.body.is_active });
+        if (!updated) {
+          return res.status(404).json({ error: 'Inch not found' });
+        }
+        return res.json({ message: `Inch ${req.body.is_active ? 'activated' : 'deactivated'}` });
       }
-      res.json({ message: 'Inch updated' });
+      // Si se envía name (y opcionalmente is_active)
+      if ('name' in req.body) {
+        await inchSchema.validate({ name: req.body.name });
+        const updateData = { name: req.body.name };
+        if ('is_active' in req.body) updateData.is_active = req.body.is_active;
+        const updated = await InchCatalog.update(id, updateData);
+        if (!updated) {
+          return res.status(404).json({ error: 'Inch not found' });
+        }
+        return res.json({ message: 'Inch updated' });
+      }
+      return res.status(400).json({ error: 'No valid fields to update' });
     } catch (error) {
       res.status(400).json({ error: 'Validation or update error', details: error.message });
     }

@@ -1,56 +1,55 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BaseTable from '../components/BaseTable';
-import { getInches, updateInch, createInch } from '../services/inchService';
+import { getPositions } from '../services/positionService';
 
 const columns = [
-  { key: 'name', label: 'Inch Diameter' }
+  { key: 'name', label: 'Position' }
 ];
 
-const InchCatalog = () => {
+const PositionCatalog = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const navigate = useNavigate();
 
-  const fetchAllInches = async () => {
+  const fetchAllPositions = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await getInches(token);
-      setData(response);
+      const response = await fetch('/api/position/all', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const positions = await response.json();
+      setData(positions);
     } catch (err) {
-      if (err?.response?.status === 403) {
-        navigate('/');
-      } else {
-        setError('Error loading data');
-      }
+      setError('Error loading data');
     }
   };
 
   useEffect(() => {
     setLoading(true);
-    fetchAllInches().finally(() => setLoading(false));
+    fetchAllPositions().finally(() => setLoading(false));
   }, []);
 
   const handleEdit = async (row) => {
     try {
       const token = localStorage.getItem('token');
       if (row.id) {
-        await updateInch(row.id, { name: row.name }, token);
+        // Editar existente
+        await import('../services/positionService').then(mod => mod.updatePosition(row.id, { name: row.name }, token));
       } else {
-        await createInch({ name: row.name, is_active: 1 }, token);
+        // Agregar nuevo
+        await import('../services/positionService').then(mod => mod.createPosition(row, token));
       }
-      await fetchAllInches();
+      await fetchAllPositions();
     } catch (err) {
-      setError('Error saving inch');
+      setError('Error saving position');
     }
   };
 
   const handleToggleActive = async (row) => {
     try {
       const token = localStorage.getItem('token');
-      await updateInch(row.id, { is_active: !row.is_active }, token);
-      await fetchAllInches();
+      await import('../services/positionService').then(mod => mod.updatePosition(row.id, { is_active: !row.is_active }, token));
+      await fetchAllPositions();
     } catch (err) {
       setError('Error updating status');
     }
@@ -61,16 +60,15 @@ const InchCatalog = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4 text-[#0C2C65]">Inch Catalog</h2>
+      <h2 className="text-xl font-bold mb-4 text-[#0C2C65]">Position Catalog</h2>
       <BaseTable
         columns={columns}
         data={data}
         onEdit={handleEdit}
         onToggleActive={handleToggleActive}
-        showInactive={true}
       />
     </div>
   );
 };
 
-export default InchCatalog;
+export default PositionCatalog;

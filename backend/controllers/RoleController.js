@@ -6,6 +6,14 @@ const roleSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getAllRaw(req, res) {
+    try {
+      const roles = await Role.findAllRaw();
+      res.json(roles);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all roles', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
       const roles = await Role.findAll();
@@ -39,13 +47,24 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      await roleSchema.validate(req.body);
-      const { name } = req.body;
-      const updated = await Role.update(id, { name });
-      if (!updated) {
-        return res.status(404).json({ error: 'Role not found' });
+      if ('is_active' in req.body && Object.keys(req.body).length === 1) {
+        const updated = await Role.update(id, { is_active: req.body.is_active });
+        if (!updated) {
+          return res.status(404).json({ error: 'Role not found' });
+        }
+        return res.json({ message: `Role ${req.body.is_active ? 'activated' : 'deactivated'}` });
       }
-      res.json({ message: 'Role updated' });
+      if ('name' in req.body) {
+        await roleSchema.validate({ name: req.body.name });
+        const updateData = { name: req.body.name };
+        if ('is_active' in req.body) updateData.is_active = req.body.is_active;
+        const updated = await Role.update(id, updateData);
+        if (!updated) {
+          return res.status(404).json({ error: 'Role not found' });
+        }
+        return res.json({ message: 'Role updated' });
+      }
+      return res.status(400).json({ error: 'No valid fields to update' });
     } catch (error) {
       res.status(400).json({ error: 'Validation or update error', details: error.message });
     }

@@ -1,6 +1,16 @@
 const getConnection = require('../db/connection');
 
 class LineCatalog {
+  static async findAllRaw() {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM line_catalog', (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
   static async findById(id) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
@@ -36,10 +46,29 @@ class LineCatalog {
     });
   }
 
-  static async update(id, name) {
+  static async update(id, data) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('UPDATE line_catalog SET name = ? WHERE id = ?', [name, id], (err, results) => {
+      let query = 'UPDATE line_catalog SET ';
+      const fields = [];
+      const params = [];
+      if (typeof data === 'object') {
+        if ('name' in data) {
+          fields.push('name = ?');
+          params.push(data.name);
+        }
+        if ('is_active' in data) {
+          fields.push('is_active = ?');
+          params.push(data.is_active);
+        }
+      }
+      if (fields.length === 0) {
+        db.end();
+        return resolve(false);
+      }
+      query += fields.join(', ') + ' WHERE id = ?';
+      params.push(id);
+      db.query(query, params, (err, results) => {
         db.end();
         if (err) return reject(err);
         resolve(results.affectedRows > 0);

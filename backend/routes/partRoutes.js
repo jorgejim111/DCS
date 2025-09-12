@@ -5,6 +5,7 @@ const authenticateToken = require('../middleware/authMiddleware');
 const authorizeRoles = require('../middleware/roleMiddleware');
 
 router.get('/', authenticateToken, authorizeRoles('admin'), PartCatalogController.getAll);
+router.get('/all', authenticateToken, authorizeRoles('admin'), PartCatalogController.getAllRaw);
 router.get('/:id', authenticateToken, authorizeRoles('admin'), PartCatalogController.getById);
 router.post('/', authenticateToken, authorizeRoles('admin'), PartCatalogController.create);
 router.put('/:id', authenticateToken, authorizeRoles('admin'), PartCatalogController.update);

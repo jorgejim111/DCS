@@ -6,6 +6,14 @@ const positionSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getAllRaw(req, res) {
+    try {
+      const positions = await PositionCatalog.findAllRaw();
+      res.json(positions);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all positions', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
       const positions = await PositionCatalog.findAll({ where: { is_active: true } });
@@ -39,6 +47,25 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
+      // Si solo se envía is_active, desactivar/activar
+      if ('is_active' in req.body && Object.keys(req.body).length === 1) {
+        if (req.body.is_active === false) {
+          const updated = await PositionCatalog.deactivate(id);
+          if (!updated) {
+            return res.status(404).json({ error: 'Position not found' });
+          }
+          return res.json({ message: 'Position deactivated' });
+        } else if (req.body.is_active === true) {
+          // Reactivar
+          const db = require('../models/PositionCatalog');
+          const updated = await db.update(id, { name: undefined, is_active: true });
+          if (!updated) {
+            return res.status(404).json({ error: 'Position not found' });
+          }
+          return res.json({ message: 'Position activated' });
+        }
+      }
+      // Si se envía name, actualizar nombre
       await positionSchema.validate(req.body);
       const { name } = req.body;
       const updated = await PositionCatalog.update(id, { name });

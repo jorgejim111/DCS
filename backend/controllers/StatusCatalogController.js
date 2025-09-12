@@ -6,6 +6,14 @@ const statusSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getAllRaw(req, res) {
+    try {
+      const statuses = await StatusCatalog.findAllRaw();
+      res.json(statuses);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all statuses', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
       const statuses = await StatusCatalog.findAll({ where: { is_active: true } });
@@ -39,13 +47,24 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      await statusSchema.validate(req.body);
-      const { name } = req.body;
-      const updated = await StatusCatalog.update(id, { name });
-      if (!updated) {
-        return res.status(404).json({ error: 'Status not found' });
+      if ('is_active' in req.body && Object.keys(req.body).length === 1) {
+        const updated = await StatusCatalog.update(id, { is_active: req.body.is_active });
+        if (!updated) {
+          return res.status(404).json({ error: 'Status not found' });
+        }
+        return res.json({ message: `Status ${req.body.is_active ? 'activated' : 'deactivated'}` });
       }
-      res.json({ message: 'Status updated' });
+      if ('name' in req.body) {
+        await statusSchema.validate({ name: req.body.name });
+        const updateData = { name: req.body.name };
+        if ('is_active' in req.body) updateData.is_active = req.body.is_active;
+        const updated = await StatusCatalog.update(id, updateData);
+        if (!updated) {
+          return res.status(404).json({ error: 'Status not found' });
+        }
+        return res.json({ message: 'Status updated' });
+      }
+      return res.status(400).json({ error: 'No valid fields to update' });
     } catch (error) {
       res.status(400).json({ error: 'Validation or update error', details: error.message });
     }

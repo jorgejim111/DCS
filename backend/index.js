@@ -1,11 +1,6 @@
-const express = require('express');
-const app = express();
-const port = 3000;
+const app = require('./app');
+const PORT = process.env.PORT || 3000;
 
-app.get('/', (req, res) => {
-  res.send('Die Control System backend funcionando');
-});
-
-app.listen(port, () => {
-  console.log(`Servidor escuchando en http://localhost:${port}`);
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });

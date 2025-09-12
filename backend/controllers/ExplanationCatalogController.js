@@ -6,12 +6,36 @@ const explanationSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getAllRaw(req, res) {
+    try {
+      const explanations = await ExplanationCatalog.findAllRaw();
+      res.json(explanations);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all explanations', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
       const explanations = await ExplanationCatalog.findAll({ where: { is_active: true } });
       res.json(explanations);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching explanations', details: error.message });
+    }
+  },
+  async getAllRaw(req, res) {
+    try {
+      const explanations = await ExplanationCatalog.findAllRaw();
+      res.json(explanations);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all explanations', details: error.message });
+    }
+  },
+  async getAllRaw(req, res) {
+    try {
+      const explanations = await ExplanationCatalog.findAllRaw();
+      res.json(explanations);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all explanations', details: error.message });
     }
   },
   async getById(req, res) {
@@ -39,13 +63,24 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      await explanationSchema.validate(req.body);
-      const { name } = req.body;
-      const updated = await ExplanationCatalog.update(id, { name });
-      if (!updated) {
-        return res.status(404).json({ error: 'Explanation not found' });
+      if ('is_active' in req.body && Object.keys(req.body).length === 1) {
+        const updated = await ExplanationCatalog.update(id, { is_active: req.body.is_active });
+        if (!updated) {
+          return res.status(404).json({ error: 'Explanation not found' });
+        }
+        return res.json({ message: `Explanation ${req.body.is_active ? 'activated' : 'deactivated'}` });
       }
-      res.json({ message: 'Explanation updated' });
+      if ('name' in req.body) {
+        await explanationSchema.validate({ name: req.body.name });
+        const updateData = { name: req.body.name };
+        if ('is_active' in req.body) updateData.is_active = req.body.is_active;
+        const updated = await ExplanationCatalog.update(id, updateData);
+        if (!updated) {
+          return res.status(404).json({ error: 'Explanation not found' });
+        }
+        return res.json({ message: 'Explanation updated' });
+      }
+      return res.status(400).json({ error: 'No valid fields to update' });
     } catch (error) {
       res.status(400).json({ error: 'Validation or update error', details: error.message });
     }

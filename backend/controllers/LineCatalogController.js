@@ -16,6 +16,15 @@ module.exports = {
       res.status(500).json({ error: 'Error fetching lines', details: error.message });
     }
   },
+  // Obtener todas las líneas (activas e inactivas)
+  async getAllRaw(req, res) {
+    try {
+      const lines = await LineCatalog.findAllRaw();
+      res.json(lines);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching all lines', details: error.message });
+    }
+  },
 
   // Obtener una línea por ID
   async getById(req, res) {
@@ -47,13 +56,24 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      await lineSchema.validate(req.body);
-      const { name } = req.body;
-      const updated = await LineCatalog.update(id, { name });
-      if (!updated) {
-        return res.status(404).json({ error: 'Line not found' });
+      if ('is_active' in req.body && Object.keys(req.body).length === 1) {
+        const updated = await LineCatalog.update(id, { is_active: req.body.is_active });
+        if (!updated) {
+          return res.status(404).json({ error: 'Line not found' });
+        }
+        return res.json({ message: `Line ${req.body.is_active ? 'activated' : 'deactivated'}` });
       }
-      res.json({ message: 'Line updated' });
+      if ('name' in req.body) {
+        await lineSchema.validate({ name: req.body.name });
+        const updateData = { name: req.body.name };
+        if ('is_active' in req.body) updateData.is_active = req.body.is_active;
+        const updated = await LineCatalog.update(id, updateData);
+        if (!updated) {
+          return res.status(404).json({ error: 'Line not found' });
+        }
+        return res.json({ message: 'Line updated' });
+      }
+      return res.status(400).json({ error: 'No valid fields to update' });
     } catch (error) {
       res.status(400).json({ error: 'Validation or update error', details: error.message });
     }

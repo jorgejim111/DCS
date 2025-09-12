@@ -1,3 +1,27 @@
+## Catálogos: patrón de diseño y funcionalidad
+
+Todas las vistas de catálogos deben seguir este patrón para asegurar coherencia visual y funcional:
+
+- **Tabla principal:**
+	- Muestra todos los registros (activos e inactivos) en una tabla con columnas configurables.
+	- Botones "Edit" y "Activate/Deactivate" en cada fila para modificar o cambiar el estado.
+	- Botón "Add" arriba de la tabla para agregar nuevos registros.
+
+- **Modal reutilizable:**
+	- Al hacer click en "Edit", se abre un modal con el campo principal editable (ej. name) y el valor actual precargado.
+	- Al hacer click en "Add", el modal muestra el campo vacío para crear un nuevo registro (por defecto activo).
+	- El modal tiene fondo claro y permite ver la vista detrás (opacidad baja).
+	- Botones "Save" y "Cancel" en el modal.
+	- Todos los textos y labels en inglés.
+
+- **Lógica de actualización:**
+	- Al guardar, se actualiza o crea el registro en la base de datos y se refresca la tabla automáticamente.
+	- El botón "Activate/Deactivate" cambia el estado sin afectar otros campos y refresca la tabla.
+
+- **Seguridad y acceso:**
+	- Todas las acciones requieren autenticación y el rol adecuado (ej. admin).
+
+Este patrón debe aplicarse en todos los catálogos para mantener la experiencia de usuario y facilitar el mantenimiento del sistema.
 # Proyecto Gestión de Troqueles — Prompt y Guía de Trabajo
 
 ---

@@ -4,6 +4,7 @@ const PositionCatalogController = require('../controllers/PositionCatalogControl
 const authenticateToken = require('../middleware/authMiddleware');
 const authorizeRoles = require('../middleware/roleMiddleware');
 
+router.get('/all', authenticateToken, authorizeRoles('admin'), PositionCatalogController.getAllRaw);
 router.get('/', authenticateToken, authorizeRoles('admin'), PositionCatalogController.getAll);
 router.get('/:id', authenticateToken, authorizeRoles('admin'), PositionCatalogController.getById);
 router.post('/', authenticateToken, authorizeRoles('admin'), PositionCatalogController.create);

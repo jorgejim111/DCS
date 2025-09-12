@@ -17,9 +17,9 @@ const menuItems = [
     label: 'Die Descriptions',
     subItems: [
       { name: 'Die Description', path: '/admin/die-description' },
-      { name: 'Inch', path: '/admin/inch' },
-      { name: 'Part', path: '/admin/part' },
-      { name: 'Description', path: '/admin/description' }
+  { name: 'Inch', path: '/admin/inch' },
+  { name: 'Part', path: '/admin/part' },
+  { name: 'Description', path: '/admin/description' },
     ]
   },
   { label: 'Serial #', subItems: [] },

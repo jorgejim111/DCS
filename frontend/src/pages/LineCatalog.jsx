@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import BaseTable from '../components/BaseTable';
-import { getInches, updateInch, createInch } from '../services/inchService';
+import { getLines, updateLine, createLine } from '../services/lineService';
+import { useNavigate } from 'react-router-dom';
 
 const columns = [
-  { key: 'name', label: 'Inch Diameter' }
+  { key: 'name', label: 'Line Name' }
 ];
 
-const InchCatalog = () => {
+const LineCatalog = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
-  const fetchAllInches = async () => {
+  const fetchAllLines = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await getInches(token);
-      setData(response);
+      const lines = await getLines(token);
+      setData(lines);
     } catch (err) {
       if (err?.response?.status === 403) {
         navigate('/');
@@ -29,28 +29,28 @@ const InchCatalog = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetchAllInches().finally(() => setLoading(false));
+    fetchAllLines().finally(() => setLoading(false));
   }, []);
 
   const handleEdit = async (row) => {
     try {
       const token = localStorage.getItem('token');
       if (row.id) {
-        await updateInch(row.id, { name: row.name }, token);
+        await updateLine(row.id, { name: row.name }, token);
       } else {
-        await createInch({ name: row.name, is_active: 1 }, token);
+        await createLine({ name: row.name, is_active: 1 }, token);
       }
-      await fetchAllInches();
+      await fetchAllLines();
     } catch (err) {
-      setError('Error saving inch');
+      setError('Error saving line');
     }
   };
 
   const handleToggleActive = async (row) => {
     try {
       const token = localStorage.getItem('token');
-      await updateInch(row.id, { is_active: !row.is_active }, token);
-      await fetchAllInches();
+      await updateLine(row.id, { is_active: !row.is_active }, token);
+      await fetchAllLines();
     } catch (err) {
       setError('Error updating status');
     }
@@ -61,7 +61,7 @@ const InchCatalog = () => {
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-4 text-[#0C2C65]">Inch Catalog</h2>
+      <h2 className="text-xl font-bold mb-4 text-[#0C2C65]">Line Catalog</h2>
       <BaseTable
         columns={columns}
         data={data}
@@ -73,4 +73,4 @@ const InchCatalog = () => {
   );
 };
 
-export default InchCatalog;
+export default LineCatalog;

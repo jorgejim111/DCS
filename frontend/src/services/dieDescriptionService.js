@@ -14,6 +14,6 @@ export const activateDieDescription = (id) => axios.patch(`${API_URL}/${id}/acti
 export const deactivateDieDescription = (id) => axios.patch(`${API_URL}/${id}/deactivate`, {}, { headers: getAuthHeader() });
 
 // Foreign key fetchers
-export const getActiveInches = () => axios.get('/api/inch?active=1', { headers: getAuthHeader() });
-export const getActiveParts = () => axios.get('/api/part?active=1', { headers: getAuthHeader() });
-export const getActiveDescriptions = () => axios.get('/api/description?active=1', { headers: getAuthHeader() });
+export const getActiveInches = () => axios.get('/api/inch/active', { headers: getAuthHeader() });
+export const getActiveParts = () => axios.get('/api/part/active', { headers: getAuthHeader() });
+export const getActiveDescriptions = () => axios.get('/api/description/active', { headers: getAuthHeader() });

@@ -1,4 +1,3 @@
-
 import axios from 'axios';
 
 const getAuthHeader = () => {
@@ -22,6 +21,20 @@ export const createProduct = async (data) => {
 
 export const updateProduct = async (id, data) => {
   const response = await axios.put(`/api/product/${id}`, data, {
+    headers: getAuthHeader()
+  });
+  return response.data;
+};
+
+export const getDieDescriptions = async () => {
+  const response = await axios.get('/api/die-description/active', {
+    headers: getAuthHeader()
+  });
+  return response.data;
+};
+
+export const getMaterials = async () => {
+  const response = await axios.get('/api/material/active', {
     headers: getAuthHeader()
   });
   return response.data;

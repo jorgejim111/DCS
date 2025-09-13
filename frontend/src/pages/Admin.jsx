@@ -11,6 +11,7 @@ import ProductCatalog from './ProductCatalog';
 import DieDescriptionCatalog from './DieDescriptionCatalog';
 import DescriptionDrCatalog from './DescriptionDrCatalog';
 import ExplanationCatalog from './ExplanationCatalog';
+import MaterialCatalog from './MaterialCatalog';
 import RoleCatalog from './RoleCatalog';
 
 import { useNavigate } from 'react-router-dom';
@@ -37,17 +38,18 @@ const Admin = () => {
             <p className="text-[#264893]">Welcome to the administration panel. Select a section from the sidebar to begin.</p>
           </>
         } />
-  <Route path="inch" element={<InchCatalog />} />
-  <Route path="part" element={<PartCatalog />} />
-  <Route path="description" element={<DescriptionCatalog />} />
-  <Route path="product" element={<ProductCatalog />} />
-    <Route path="die-description" element={<DieDescriptionCatalog />} />
-  <Route path="status" element={<StatusCatalog />} />
-  <Route path="position" element={<PositionCatalog />} />
-  <Route path="line" element={<LineCatalog />} />
-  <Route path="description-dr" element={<DescriptionDrCatalog />} />
-  <Route path="explanation" element={<ExplanationCatalog />} />
-  <Route path="role" element={<RoleCatalog />} />
+        <Route path="inch" element={<InchCatalog />} />
+        <Route path="part" element={<PartCatalog />} />
+        <Route path="description" element={<DescriptionCatalog />} />
+        <Route path="product" element={<ProductCatalog />} />
+        <Route path="die-description" element={<DieDescriptionCatalog />} />
+        <Route path="status" element={<StatusCatalog />} />
+        <Route path="position" element={<PositionCatalog />} />
+        <Route path="line" element={<LineCatalog />} />
+        <Route path="description-dr" element={<DescriptionDrCatalog />} />
+        <Route path="explanation" element={<ExplanationCatalog />} />
+        <Route path="role" element={<RoleCatalog />} />
+        <Route path="material" element={<MaterialCatalog />} />
       </Routes>
     </AdminLayout>
   );

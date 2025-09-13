@@ -1,9 +1,9 @@
- 
 import React, { useEffect, useState } from 'react';
 import BaseTableAdvanced from '../components/BaseTableAdvanced';
-import BaseModalAdvanced from '../components/BaseModalAdvanced';
+// importación eliminada, migrar a modal específico
 import { dieDescriptionSchema } from '../schemas/dieDescriptionSchema';
 import * as dieDescriptionService from '../services/dieDescriptionService';
+import DieDescriptionModal from '../components/modals/DieDescriptionModal';
 
 const DieDescriptionCatalog = () => {
 const [records, setRecords] = useState([]);
@@ -71,7 +71,7 @@ const [selectOptions, setSelectOptions] = useState({});
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4 text-blue-900">Die Description Catalog</h2>
       <BaseTableAdvanced
-        schema={dieDescriptionSchema}
+        schema={dieDescriptionSchema.filter(f => f.key !== 'id')}
         data={records.map(row => ({
           ...row,
           inch: row.inch,
@@ -83,13 +83,14 @@ const [selectOptions, setSelectOptions] = useState({});
         onAdd={() => { setEditRecord(null); setModalOpen(true); }}
       />
       {modalOpen && (
-        <BaseModalAdvanced
-          schema={dieDescriptionSchema}
+        <DieDescriptionModal
           mode={editRecord ? 'edit' : 'add'}
           record={editRecord}
           onSave={handleSave}
           onClose={() => { setModalOpen(false); setEditRecord(null); }}
-          selectOptions={selectOptions}
+          inches={selectOptions.inch_id || []}
+          parts={selectOptions.part_id || []}
+          descriptions={selectOptions.description_id || []}
         />
       )}
     </div>

@@ -1,3 +1,9 @@
+export const getActiveInches = async (token) => {
+  const response = await axios.get('/api/inch/active', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
 export const updateInch = async (id, data, token) => {
   const response = await axios.put(`/api/inch/${id}`, data, {
     headers: { Authorization: `Bearer ${token}` }

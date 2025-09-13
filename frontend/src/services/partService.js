@@ -1,3 +1,9 @@
+export const getActiveParts = async (token) => {
+  const response = await axios.get('/api/part/active', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
 export const createPart = async (data, token) => {
   const response = await axios.post('/api/part', data, {
     headers: { Authorization: `Bearer ${token}` }

@@ -1,3 +1,9 @@
+export const getActiveDescriptions = async (token) => {
+  const response = await axios.get('/api/description/active', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
 export const createDescription = async (data, token) => {
   const response = await axios.post('/api/description', data, {
     headers: { Authorization: `Bearer ${token}` }

@@ -77,6 +77,7 @@ const [selectOptions, setSelectOptions] = useState({});
           inch: row.inch,
           part: row.part,
           description: row.description,
+          is_active: row.is_active ? 'Active' : 'Inactive',
         }))}
         onEdit={rec => { setEditRecord(rec); setModalOpen(true); }}
         onToggleActive={handleToggleActive}

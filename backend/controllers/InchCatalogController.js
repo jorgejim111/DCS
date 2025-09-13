@@ -8,6 +8,15 @@ const inchSchema = yup.object().shape({
 });
 
 module.exports = {
+  // Obtener solo pulgadas activas (para selects en frontend)
+  async getActive(req, res) {
+    try {
+      const inches = await InchCatalog.findAll({ where: { is_active: true } });
+      res.json(inches);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active inches', details: error.message });
+    }
+  },
   async getAllRaw(req, res) {
     try {
       const inches = await InchCatalog.findAllRaw();

@@ -6,6 +6,15 @@ const explanationSchema = yup.object().shape({
 });
 
 module.exports = {
+  // Obtener solo explicaciones activas (para selects en frontend)
+  async getActive(req, res) {
+    try {
+      const explanations = await ExplanationCatalog.findAll({ where: { is_active: true } });
+      res.json(explanations);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active explanations', details: error.message });
+    }
+  },
   async getAllRaw(req, res) {
     try {
       const explanations = await ExplanationCatalog.findAllRaw();

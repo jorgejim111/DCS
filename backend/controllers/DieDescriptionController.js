@@ -2,8 +2,13 @@ const DieDescription = require('../models/DieDescription');
 const yup = require('yup');
 
 const dieDescriptionSchema = yup.object().shape({
-  name: yup.string().required('Name is required'),
-  // Agrega aquí otros campos requeridos según el modelo
+  die_description: yup.string().required('Die description is required'),
+  inch_id: yup.number().required('Inch is required'),
+  part_id: yup.number().required('Part is required'),
+  description_id: yup.number().required('Description is required'),
+  min_in_circulation: yup.number().default(0),
+  min_in_stock: yup.number().default(0),
+  is_active: yup.number().default(1),
 });
 
 module.exports = {
@@ -14,6 +19,14 @@ module.exports = {
       res.json(descriptions);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching die descriptions', details: error.message });
+    }
+  },
+  async getActive(req, res) {
+    try {
+      const descriptions = await DieDescription.findActive();
+      res.json(descriptions);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active die descriptions', details: error.message });
     }
   },
   async getById(req, res) {

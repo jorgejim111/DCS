@@ -1,31 +1,16 @@
-# Avances y recomendaciones (12/sep/2025)
+# Catálogos: patrón de diseño y avances finales
 
-**Catálogo Die Description:**
-- Vista y backend corregidos para mostrar nombres legibles en la tabla (Inch, Part, Description).
-- Botón Activate/Deactivate funcional: solo cambia el campo is_active y refresca la tabla automáticamente.
-- Modal reutilizable para agregar/editar, con campos y labels en inglés.
-- Validación backend permite actualizar solo is_active sin requerir otros campos.
-- Seguridad y roles aplicados en endpoints y frontend.
-- Todos los cambios siguen el patrón de diseño y funcionalidad descrito arriba.
-
-**Recomendaciones para programar el resto de las vistas:**
-- Usa el mismo patrón: tabla con todos los registros, botones Edit y Activate/Deactivate, modal reutilizable.
-- Asegúrate de que los endpoints permitan actualizar solo is_active.
-- Mantén los labels y mensajes en inglés en la interfaz.
-- Refresca la tabla automáticamente después de cada acción.
-- Aplica validaciones backend flexibles para cambios de estado.
-- Consulta este README antes de programar cada catálogo para mantener coherencia y calidad.
-## Catálogos: patrón de diseño y funcionalidad
-
-Todas las vistas de catálogos deben seguir este patrón para asegurar coherencia visual y funcional:
+Todas las vistas de catálogos siguen el patrón para coherencia visual y funcional:
 
 - **Tabla principal:**
 	- Muestra todos los registros (activos e inactivos) en una tabla con columnas configurables.
 	- Botones "Edit" y "Activate/Deactivate" en cada fila para modificar o cambiar el estado.
 	- Botón "Add" arriba de la tabla para agregar nuevos registros.
+	- Paginación y orden descendente por medidas (Die Description) implementados en Die Serial.
+	- Visualización de nombres en vez de IDs (ej. Status muestra el nombre, no el ID).
 
 - **Modal reutilizable:**
-	- Al hacer click en "Edit", se abre un modal con el campo principal editable (ej. name) y el valor actual precargado.
+	- Al hacer click en "Edit", se abre un modal con el campo principal editable y el valor actual precargado.
 	- Al hacer click en "Add", el modal muestra el campo vacío para crear un nuevo registro (por defecto activo).
 	- El modal tiene fondo claro y permite ver la vista detrás (opacidad baja).
 	- Botones "Save" y "Cancel" en el modal.
@@ -38,14 +23,21 @@ Todas las vistas de catálogos deben seguir este patrón para asegurar coherenci
 - **Seguridad y acceso:**
 	- Todas las acciones requieren autenticación y el rol adecuado (ej. admin).
 
-Este patrón debe aplicarse en todos los catálogos para mantener la experiencia de usuario y facilitar el mantenimiento del sistema.
+**Avances Septiembre 2025:**
+- Backend y frontend conectados con paginación y orden por medidas.
+- Catálogos muestran nombres descriptivos en vez de IDs.
+- Sidebar interactivo y consistente.
+- Lógica de activar/desactivar y edición probada en todos los catálogos principales.
+- Documentación actualizada y código listo para siguiente ciclo.
+
+¡Sesión finalizada! Todos los cambios están documentados y el sistema está listo para continuar.
 # Proyecto Gestión de Troqueles — Prompt y Guía de Trabajo
 
 ---
 
 ## Visión y Equipo
 
-Este proyecto es el resultado de la colaboración entre dos expertos: tú, gestor de troqueles, y yo, programador especializado. El objetivo es migrar y modernizar el sistema de gestión de troqueles, creciendo juntos profesionalmente y asegurando calidad, trazabilidad y escalabilidad.
+Este proyecto es el resultado de la colaboración entre dos expertos: tú, gestor de troqueles, y yo (copilot), programador especializado. El objetivo es migrar y modernizar el sistema de gestión de troqueles, creciendo juntos profesionalmente y asegurando calidad, trazabilidad y escalabilidad.
 
 "Unidos para ganar: cada avance es un paso hacia el crecimiento del equipo y la empresa."
 
@@ -65,6 +57,7 @@ Este proyecto es el resultado de la colaboración entre dos expertos: tú, gesto
 
 - `/backend` — Código del servidor y API
 - `/frontend` — Aplicación React
+	- `/components/modals` — Modales específicos para cada catálogo que recibe claves foráneas (FK), por ejemplo ProductModal para la tabla Product. Cada modal maneja la lógica de selección y edición de FK de forma independiente y reutilizable.
 - `/database` — Scripts SQL y seeds
 - `/planeacion` — Documentación y reglas
 	- `resumen.md` — Visión general
@@ -188,6 +181,18 @@ El frontend incluye un componente de navegación superior reutilizable (`AdminNa
 - Botón “Logout”
 
 Este componente asegura coherencia visual y funcional en todas las vistas administrativas.
+
+---
+
+# Avances recientes (Septiembre 2025)
+
+- Catálogo de Material implementado siguiendo el patrón estándar (tabla, modal, activar/desactivar, refresco automático).
+- Lógica de activar/desactivar corregida en todos los catálogos para evitar sobrescribir el nombre y solo modificar el estado.
+- Backend ajustado para permitir cambios de estado sin requerir el campo name.
+- MaterialCatalog integrado en el menú Sidebar y rutas de administración.
+- Todos los catálogos muestran registros activos e inactivos, permitiendo gestión completa desde el panel.
+- Mejoras visuales y de usabilidad en modales y tablas.
+- Documentación y estructura actualizada para facilitar mantenimiento y escalabilidad.
 
 ---
 

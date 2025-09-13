@@ -1,4 +1,4 @@
- const getConnection = require('../db/connection');
+const getConnection = require('../db/connection');
 
 class DieDescription {
   static async updateActive(id, is_active) {
@@ -40,6 +40,33 @@ class DieDescription {
         LEFT JOIN inch_catalog i ON d.inch_id = i.id
         LEFT JOIN part_catalog p ON d.part_id = p.id
         LEFT JOIN description_catalog dc ON d.description_id = dc.id
+      `, (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
+
+  static async findActive() {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
+      db.query(`
+        SELECT d.id,
+               i.name AS inch,
+               p.name AS part,
+               dc.name AS description,
+               d.die_description,
+               d.min_in_circulation,
+               d.min_in_stock,
+               d.is_active,
+               d.created_at,
+               d.updated_at
+        FROM die_description d
+        LEFT JOIN inch_catalog i ON d.inch_id = i.id
+        LEFT JOIN part_catalog p ON d.part_id = p.id
+        LEFT JOIN description_catalog dc ON d.description_id = dc.id
+        WHERE d.is_active = TRUE
       `, (err, results) => {
         db.end();
         if (err) return reject(err);

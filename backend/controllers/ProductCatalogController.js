@@ -73,4 +73,12 @@ module.exports = {
       res.status(500).json({ error: 'Error deleting product', details: error.message });
     }
   },
+  async getActive(req, res) {
+    try {
+      const products = await ProductCatalog.findActive();
+      res.json(products);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active products', details: error.message });
+    }
+  },
 };

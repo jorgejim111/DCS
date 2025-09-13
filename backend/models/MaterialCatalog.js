@@ -15,6 +15,17 @@ class MaterialCatalog {
   static async findAll() {
     const db = getConnection();
     return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM material_catalog', (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
+
+  static async findActive() {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
       db.query('SELECT * FROM material_catalog WHERE is_active = TRUE', (err, results) => {
         db.end();
         if (err) return reject(err);
@@ -36,14 +47,31 @@ class MaterialCatalog {
     });
   }
 
-  static async update(id, name) {
+  static async update(id, data) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('UPDATE material_catalog SET name = ? WHERE id = ?', [name, id], (err, results) => {
+      if (data.hasOwnProperty('is_active') && !data.hasOwnProperty('name')) {
+        db.query('UPDATE material_catalog SET is_active = ? WHERE id = ?', [data.is_active, id], (err, results) => {
+          db.end();
+          if (err) return reject(err);
+          resolve(results.affectedRows > 0);
+        });
+      } else if (data.hasOwnProperty('name') && !data.hasOwnProperty('is_active')) {
+        db.query('UPDATE material_catalog SET name = ? WHERE id = ?', [data.name, id], (err, results) => {
+          db.end();
+          if (err) return reject(err);
+          resolve(results.affectedRows > 0);
+        });
+      } else if (data.hasOwnProperty('name') && data.hasOwnProperty('is_active')) {
+        db.query('UPDATE material_catalog SET name = ?, is_active = ? WHERE id = ?', [data.name, data.is_active, id], (err, results) => {
+          db.end();
+          if (err) return reject(err);
+          resolve(results.affectedRows > 0);
+        });
+      } else {
         db.end();
-        if (err) return reject(err);
-        resolve(results.affectedRows > 0);
-      });
+        resolve(false);
+      }
     });
   }
 

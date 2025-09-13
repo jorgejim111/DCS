@@ -23,8 +23,18 @@ const menuItems = [
   { name: 'Description', path: '/admin/description' },
     ]
   },
-  { label: 'Serial #', subItems: [] },
-  { label: 'Damage Report', subItems: [] },
+  {
+    label: 'Serial #',
+    subItems: [
+      { name: 'Serial #', path: '/admin/die-serial' }
+    ]
+  },
+  {
+    label: 'Damage Report',
+    subItems: [
+      { name: 'Damage Report', path: '/admin/damage-report' }
+    ]
+  },
   {
     label: 'Users',
     subItems: [
@@ -47,14 +57,14 @@ const Sidebar = () => {
   return (
     <div className="h-full w-full bg-[#D3D9E1] flex flex-col gap-4 justify-start">
       {menuItems.map((item, idx) => (
-        <div key={item.label} className="w-full">
+        <div key={item.label || item.name} className="w-full">
           <button
             className="w-full text-left font-semibold text-[#0C2C65] py-2 px-3 rounded hover:bg-[#F4F6F8] focus:outline-none"
             onClick={() => setOpenMenu(openMenu === idx ? null : idx)}
           >
-            {item.label}
+            {item.label || item.name}
           </button>
-          {item.subItems.length > 0 && openMenu === idx && (
+          {Array.isArray(item.subItems) && item.subItems.length > 0 && openMenu === idx && (
             <div className="ml-4 mt-1 flex flex-col gap-1">
               {item.subItems.map(sub => (
                 <Link
@@ -66,6 +76,14 @@ const Sidebar = () => {
                 </Link>
               ))}
             </div>
+          )}
+          {!item.subItems && item.path && (
+            <Link
+              to={item.path}
+              className="block text-[#264893] hover:text-[#23B0E8] py-1 px-2 rounded ml-4"
+            >
+              {item.label}
+            </Link>
           )}
         </div>
       ))}

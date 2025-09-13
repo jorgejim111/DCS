@@ -7,6 +7,15 @@ const lineSchema = yup.object().shape({
 });
 
 module.exports = {
+  // Obtener solo líneas activas (para selects en frontend)
+  async getActive(req, res) {
+    try {
+      const lines = await LineCatalog.findAll();
+      res.json(lines);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active lines', details: error.message });
+    }
+  },
   // Obtener todas las líneas activas
   async getAll(req, res) {
     try {

@@ -6,6 +6,15 @@ const statusSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getActive(req, res) {
+    try {
+      const statuses = await StatusCatalog.findAll();
+      const activeStatuses = Array.isArray(statuses) ? statuses.filter(s => s.is_active) : [];
+      res.json(activeStatuses);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active statuses', details: error.message });
+    }
+  },
   async getAllRaw(req, res) {
     try {
       const statuses = await StatusCatalog.findAllRaw();

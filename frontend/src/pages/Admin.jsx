@@ -13,6 +13,7 @@ import DescriptionDrCatalog from './DescriptionDrCatalog';
 import ExplanationCatalog from './ExplanationCatalog';
 import MaterialCatalog from './MaterialCatalog';
 import RoleCatalog from './RoleCatalog';
+import DieSerialCatalog from './DieSerialCatalog';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -50,6 +51,7 @@ const Admin = () => {
         <Route path="explanation" element={<ExplanationCatalog />} />
         <Route path="role" element={<RoleCatalog />} />
         <Route path="material" element={<MaterialCatalog />} />
+        <Route path="die-serial" element={<DieSerialCatalog />} />
       </Routes>
     </AdminLayout>
   );

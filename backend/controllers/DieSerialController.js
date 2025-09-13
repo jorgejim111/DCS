@@ -11,12 +11,50 @@ const dieSerialSchema = yup.object().shape({
 });
 
 module.exports = {
+  async activate(req, res) {
+    try {
+      const { id } = req.params;
+      const updated = await require('../models/DieSerial').update(id, { is_active: true });
+      if (!updated) {
+        return res.status(404).json({ error: 'Die serial not found' });
+      }
+      res.json({ message: 'Die serial activated' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error activating die serial', details: error.message });
+    }
+  },
+  async deactivate(req, res) {
+    try {
+      const { id } = req.params;
+      const updated = await require('../models/DieSerial').update(id, { is_active: false });
+      if (!updated) {
+        return res.status(404).json({ error: 'Die serial not found' });
+      }
+      res.json({ message: 'Die serial deactivated' });
+    } catch (error) {
+      res.status(500).json({ error: 'Error deactivating die serial', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
-      const serials = await DieSerial.findAll({ where: { is_active: true } });
+      // Get pagination and order params from query
+      const { page, limit, orderBy, orderDir } = req.query;
+      const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir });
       res.json(serials);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching die serials', details: error.message });
+    }
+  },
+  // Obtener solo die serials activos (para selects en frontend)
+  async getActive(req, res) {
+    try {
+      const allSerials = await DieSerial.findAll();
+      const activeSerials = Array.isArray(allSerials)
+        ? allSerials.filter(s => s.is_active)
+        : [];
+      res.json(activeSerials);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active die serials', details: error.message });
     }
   },
   async getById(req, res) {

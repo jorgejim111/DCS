@@ -39,9 +39,18 @@ module.exports = {
   async update(req, res) {
     try {
       const { id } = req.params;
-      await materialSchema.validate(req.body);
-      const { name } = req.body;
-      const updated = await MaterialCatalog.update(id, { name });
+      const data = req.body;
+      // Si solo se envía is_active, no validar con yup
+      if (Object.keys(data).length === 1 && data.hasOwnProperty('is_active')) {
+        const updated = await MaterialCatalog.update(id, { is_active: data.is_active });
+        if (!updated) {
+          return res.status(404).json({ error: 'Material not found' });
+        }
+        return res.json({ message: 'Material status updated' });
+      }
+      // Si se envían más campos, validar normalmente
+      await materialSchema.validate(data);
+      const updated = await MaterialCatalog.update(id, { name: data.name });
       if (!updated) {
         return res.status(404).json({ error: 'Material not found' });
       }
@@ -60,6 +69,14 @@ module.exports = {
       res.json({ message: 'Material marked as inactive' });
     } catch (error) {
       res.status(500).json({ error: 'Error deleting material', details: error.message });
+    }
+  },
+  async getActive(req, res) {
+    try {
+      const materials = await MaterialCatalog.findActive();
+      res.json(materials);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active materials', details: error.message });
     }
   },
 };

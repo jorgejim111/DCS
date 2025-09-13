@@ -5,6 +5,7 @@ const authenticateToken = require('../middleware/authMiddleware');
 const authorizeRoles = require('../middleware/roleMiddleware');
 
 router.get('/', authenticateToken, authorizeRoles('admin'), InchCatalogController.getAll);
+router.get('/active', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr', 'setup'), InchCatalogController.getActive);
 router.get('/all', authenticateToken, authorizeRoles('admin'), InchCatalogController.getAllRaw);
 router.get('/:id', authenticateToken, authorizeRoles('admin'), InchCatalogController.getById);
 router.post('/', authenticateToken, authorizeRoles('admin'), InchCatalogController.create);

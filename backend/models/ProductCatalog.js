@@ -17,7 +17,9 @@ class ProductCatalog {
     return new Promise((resolve, reject) => {
       db.query(`
         SELECT p.id, p.name, p.is_active,
+               p.die_description_id,
                d.die_description AS die_description,
+               p.material_id,
                m.name AS material
         FROM product_catalog p
         LEFT JOIN die_description d ON p.die_description_id = d.id
@@ -81,6 +83,17 @@ class ProductCatalog {
         db.end();
         if (err) return reject(err);
         resolve(results.affectedRows > 0);
+      });
+    });
+  }
+
+  static async findActive() {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
+      db.query('SELECT * FROM product_catalog WHERE is_active = TRUE', (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
       });
     });
   }

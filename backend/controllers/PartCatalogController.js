@@ -6,6 +6,15 @@ const partSchema = yup.object().shape({
 });
 
 module.exports = {
+  // Obtener solo partes activas (para selects en frontend)
+  async getActive(req, res) {
+    try {
+      const parts = await PartCatalog.findAll({ where: { is_active: true } });
+      res.json(parts);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active parts', details: error.message });
+    }
+  },
   async getAllRaw(req, res) {
     try {
       const parts = await PartCatalog.findAllRaw();

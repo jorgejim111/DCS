@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 const menuItems = [
+  
   {
     label: 'Catalogs',
     subItems: [
@@ -38,7 +39,7 @@ const menuItems = [
   {
     label: 'Users',
     subItems: [
-      { name: 'User', path: '/admin/user' },
+      { name: 'Users', path: '/admin/user' },
       { name: 'Role', path: '/admin/role' }
     ]
   },
@@ -47,6 +48,12 @@ const menuItems = [
     subItems: [
       { name: 'Worker', path: '/admin/worker' },
       { name: 'Position', path: '/admin/position' }
+    ]
+  },
+  {
+    label: 'History',
+    subItems: [
+      { name: 'Die Serial History', path: '/admin/die-serial-history' }
     ]
   },
 ];

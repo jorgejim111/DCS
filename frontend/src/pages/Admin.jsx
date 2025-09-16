@@ -14,6 +14,10 @@ import ExplanationCatalog from './ExplanationCatalog';
 import MaterialCatalog from './MaterialCatalog';
 import RoleCatalog from './RoleCatalog';
 import DieSerialCatalog from './DieSerialCatalog';
+import DamageReport from './DamageReport';
+import Users from './Users';
+import Workers from './Workers';
+import DieSerialHistory from './DieSerialHistory';
 
 import { useNavigate } from 'react-router-dom';
 
@@ -52,6 +56,10 @@ const Admin = () => {
         <Route path="role" element={<RoleCatalog />} />
         <Route path="material" element={<MaterialCatalog />} />
         <Route path="die-serial" element={<DieSerialCatalog />} />
+        <Route path="damage-report" element={<DamageReport />} />
+        <Route path="user" element={<Users />} />
+        <Route path="worker" element={<Workers />} />
+        <Route path="die-serial-history" element={<DieSerialHistory />} />
       </Routes>
     </AdminLayout>
   );

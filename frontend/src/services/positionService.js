@@ -1,3 +1,9 @@
+export const getActive = async () => {
+  const token = localStorage.getItem('token');
+  const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+  const res = await fetch('/api/position/active', config);
+  return res.json();
+};
 export const createPosition = async (data, token) => {
   const response = await axios.post('/api/position', data, {
     headers: { Authorization: `Bearer ${token}` }

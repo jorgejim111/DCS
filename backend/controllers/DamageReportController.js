@@ -9,8 +9,17 @@ const damageReportSchema = yup.object().shape({
 module.exports = {
   async getAll(req, res) {
     try {
-      const reports = await DamageReport.findAll();
-      res.json(reports);
+      const page = parseInt(req.query.page) || 1;
+      const pageSize = parseInt(req.query.pageSize) || 20;
+      const startDate = req.query.startDate;
+      const endDate = req.query.endDate;
+      const result = await DamageReport.findAll({ page, pageSize, startDate, endDate });
+      res.json({
+        data: result.data,
+        total: result.total,
+        page,
+        pageCount: Math.ceil(result.total / pageSize)
+      });
     } catch (error) {
       res.status(500).json({ error: 'Error fetching damage reports', details: error.message });
     }

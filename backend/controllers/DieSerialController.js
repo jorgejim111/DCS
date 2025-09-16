@@ -37,9 +37,9 @@ module.exports = {
   },
   async getAll(req, res) {
     try {
-      // Get pagination and order params from query
-      const { page, limit, orderBy, orderDir } = req.query;
-      const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir });
+      // Get pagination, order, and status filter params from query
+      const { page, limit, orderBy, orderDir, statusFilter } = req.query;
+      const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir, statusFilter });
       res.json(serials);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching die serials', details: error.message });

@@ -1,3 +1,12 @@
+function getAuthConfig() {
+  const token = localStorage.getItem('token');
+  return token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+}
+
+export const getActive = async () => {
+  const res = await axios.get('/api/role/active', getAuthConfig());
+  return res.data;
+};
 import axios from 'axios';
 
 export const getRoles = async (token) => {

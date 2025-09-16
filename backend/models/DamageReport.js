@@ -12,13 +12,57 @@ class DamageReport {
     });
   }
 
-  static async findAll() {
+  static async findAll({ page = 1, pageSize = 20, startDate, endDate }) {
     const db = getConnection();
+    const offset = (page - 1) * pageSize;
+    let where = '';
+    const params = [];
+    if (startDate && endDate) {
+      where = 'WHERE dr.created_at BETWEEN ? AND ?';
+      params.push(startDate + ' 00:00:00', endDate + ' 23:59:59');
+    }
+    const sql = `
+      SELECT dr.id,
+        ds.serial_number AS serial,
+        DATE_FORMAT(dr.created_at, '%Y-%m-%d %H:%i:%s') AS createdAt,
+        p.name AS product,
+        l.name AS line,
+        ws.name AS supervisor,
+        wo.name AS operator,
+        ddesc.name AS description,
+        e.name AS explanation,
+        dr.note,
+        dr.if_sample AS sample,
+        s.name AS status,
+        dr.verdict,
+        DATE_FORMAT(dr.updated_at, '%Y-%m-%d %H:%i:%s') AS updatedAt
+      FROM damage_report dr
+      LEFT JOIN die_serial ds ON dr.die_serial_id = ds.id
+      LEFT JOIN product_catalog p ON dr.product_id = p.id
+      LEFT JOIN line_catalog l ON dr.line_id = l.id
+      LEFT JOIN worker ws ON dr.supervisor_id = ws.id
+      LEFT JOIN worker wo ON dr.operator_id = wo.id
+      LEFT JOIN description_dr_catalog ddesc ON dr.description_dr_id = ddesc.id
+      LEFT JOIN explanation_catalog e ON dr.explanation_id = e.id
+      LEFT JOIN status_catalog s ON dr.status_id = s.id
+      ${where}
+  ORDER BY dr.id DESC
+      LIMIT ? OFFSET ?
+    `;
+    params.push(pageSize, offset);
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM damage_report', (err, results) => {
-        db.end();
-        if (err) return reject(err);
-        resolve(results);
+      db.query(sql, params, (err, results) => {
+        if (err) {
+          db.end();
+          return reject(err);
+        }
+        // Obtener el total para paginación
+        const countSql = `SELECT COUNT(*) as total FROM damage_report dr ${where}`;
+        db.query(countSql, params.slice(0, where ? 2 : 0), (err2, countRes) => {
+          db.end();
+          if (err2) return reject(err2);
+          resolve({ data: results, total: countRes[0].total });
+        });
       });
     });
   }

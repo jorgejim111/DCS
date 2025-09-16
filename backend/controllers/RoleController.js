@@ -6,6 +6,15 @@ const roleSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getActive(req, res) {
+    try {
+      // No hay is_active, así que devolvemos todos los roles
+      const roles = await Role.findAll();
+      res.json(roles);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active roles', details: error.message });
+    }
+  },
   async getAllRaw(req, res) {
     try {
       const roles = await Role.findAllRaw();

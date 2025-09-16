@@ -6,6 +6,10 @@ import DieSerialModal from '../components/modals/DieSerialModal';
 
 const DieSerialCatalog = () => {
   const [records, setRecords] = useState([]);
+  const [statusFilter, setStatusFilter] = useState('circulation');
+  const [filter, setFilter] = useState('');
+  const [filteredRecords, setFilteredRecords] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [editRecord, setEditRecord] = useState(null);
   const [selectOptions, setSelectOptions] = useState({});
@@ -23,8 +27,11 @@ const DieSerialCatalog = () => {
   };
 
   // Fetch all records with pagination and order
-  const fetchRecords = async (newPage = page) => {
-    const params = { page: newPage, limit, orderBy: 'die_description', orderDir: 'DESC' };
+  const fetchRecords = async () => {
+    const params = { orderBy: 'die_description', orderDir: 'DESC' };
+    if (statusFilter !== 'all') {
+      params.statusFilter = statusFilter;
+    }
     const res = await dieSerialService.getAllDieSerials(params);
     setRecords(res.data);
   };
@@ -42,9 +49,24 @@ const DieSerialCatalog = () => {
   };
 
   useEffect(() => {
-    fetchRecords(page);
+    fetchRecords();
     fetchSelectOptions();
-  }, [page, limit]);
+  }, [statusFilter]);
+
+  // Filtrado y paginación en frontend
+  useEffect(() => {
+    let filtered = records;
+    if (filter.trim() !== '') {
+      filtered = records.filter(r =>
+        (r.die_description_text || '').toLowerCase().includes(filter.toLowerCase())
+      );
+    }
+    setFilteredRecords(filtered);
+    setTotalPages(Math.max(1, Math.ceil(filtered.length / limit)));
+    if (page > Math.max(1, Math.ceil(filtered.length / limit))) {
+      setPage(1);
+    }
+  }, [records, filter, limit]);
 
   // Add or edit record
   const handleSave = async (data) => {
@@ -62,15 +84,41 @@ const DieSerialCatalog = () => {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4 text-blue-900">Die Serial Catalog</h2>
       <div className="flex items-center gap-4 mb-2">
+        <input
+          type="text"
+          placeholder="Filter by Die Description..."
+          value={filter}
+          onChange={e => { setFilter(e.target.value); setPage(1); }}
+          className="border px-2 py-1 rounded w-64"
+        />
+        <div className="ml-auto flex gap-2">
+          <button
+            className={`px-3 py-1 rounded ${statusFilter === 'all' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+            onClick={() => { setStatusFilter('all'); setPage(1); }}
+          >All</button>
+          <button
+            className={`px-3 py-1 rounded ${statusFilter === 'circulation' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+            onClick={() => { setStatusFilter('circulation'); setPage(1); }}
+          >Circulation</button>
+          <button
+            className={`px-3 py-1 rounded ${statusFilter === 'new' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+            onClick={() => { setStatusFilter('new'); setPage(1); }}
+          >New</button>
+          <button
+            className={`px-3 py-1 rounded ${statusFilter === 'scraped' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+            onClick={() => { setStatusFilter('scraped'); setPage(1); }}
+          >Scraped</button>
+        </div>
         <button
           className="bg-blue-700 text-white px-3 py-1 rounded disabled:opacity-50"
           onClick={() => setPage(page > 1 ? page - 1 : 1)}
           disabled={page === 1}
         >Previous</button>
-        <span>Page {page}</span>
+        <span>Page {page} of {totalPages}</span>
         <button
           className="bg-blue-700 text-white px-3 py-1 rounded"
-          onClick={() => setPage(page + 1)}
+          onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
+          disabled={page === totalPages}
         >Next</button>
         <label className="ml-4">Rows per page:
           <select value={limit} onChange={e => setLimit(Number(e.target.value))} className="ml-2 px-2 py-1 border rounded">
@@ -82,7 +130,7 @@ const DieSerialCatalog = () => {
       </div>
       <BaseTableAdvanced
         schema={dieSerialSchema.filter(f => f.key !== 'id')}
-        data={records}
+        data={filteredRecords.slice((page - 1) * limit, page * limit)}
         onEdit={rec => { setEditRecord(rec); setModalOpen(true); }}
         onToggleActive={handleToggleActive}
         onAdd={() => { setEditRecord(null); setModalOpen(true); }}

@@ -15,12 +15,11 @@ class DieSerial {
   static async findAll() {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      // Accept options for pagination and order
+      // Accept options for pagination, order, and status filter
       const args = arguments[0] || {};
-      const page = parseInt(args.page) || 1;
-      const limit = parseInt(args.limit) || 20;
-      const offset = (page - 1) * limit;
-      // Permitir ordenar por die_description.name
+      const page = args.page ? parseInt(args.page) : null;
+      const limit = args.limit ? parseInt(args.limit) : null;
+      const offset = page && limit ? (page - 1) * limit : null;
       let orderBy = args.orderBy || 'die_description';
       const orderDir = args.orderDir === 'ASC' ? 'ASC' : 'DESC';
       let orderClause;
@@ -29,11 +28,33 @@ class DieSerial {
       } else {
         orderClause = `die_serial.${orderBy} ${orderDir}`;
       }
-      const query = `SELECT die_serial.*, die_description.die_description AS die_description_text, status_catalog.name AS status_name FROM die_serial
+      let whereClause = '';
+      let whereParams = [];
+      if (args.statusFilter) {
+        if (args.statusFilter === 'circulation') {
+          whereClause = 'WHERE status_catalog.name IN (?, ?)';
+          whereParams = ['Circulation', 'Open DR'];
+        } else if (args.statusFilter === 'new') {
+          whereClause = 'WHERE status_catalog.name = ?';
+          whereParams = ['New'];
+        } else if (args.statusFilter === 'scraped') {
+          whereClause = 'WHERE status_catalog.name = ?';
+          whereParams = ['Scraped'];
+        }
+      }
+      let query = `SELECT die_serial.*, die_description.die_description AS die_description_text, status_catalog.name AS status_name FROM die_serial
         LEFT JOIN die_description ON die_serial.die_description_id = die_description.id
         LEFT JOIN status_catalog ON die_serial.status_id = status_catalog.id
-        ORDER BY ${orderClause} LIMIT ? OFFSET ?`;
-      db.query(query, [limit, offset], (err, results) => {
+        ${whereClause}
+        ORDER BY ${orderClause}`;
+      if (limit && offset !== null) {
+        query += ' LIMIT ? OFFSET ?';
+      }
+      const params = [...whereParams];
+      if (limit && offset !== null) {
+        params.push(limit, offset);
+      }
+      db.query(query, params, (err, results) => {
         db.end();
         if (err) return reject(err);
         resolve(results);

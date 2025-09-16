@@ -6,6 +6,7 @@ const authorizeRoles = require('../middleware/roleMiddleware');
 
 router.get('/', authenticateToken, authorizeRoles('admin'), RoleController.getAll);
 router.get('/all', authenticateToken, authorizeRoles('admin'), RoleController.getAllRaw);
+router.get('/active', authenticateToken, authorizeRoles('admin'), RoleController.getActive); // Nueva ruta para roles activos (simulados)
 router.get('/:id', authenticateToken, authorizeRoles('admin'), RoleController.getById);
 router.post('/', authenticateToken, authorizeRoles('admin'), RoleController.create);
 router.put('/:id', authenticateToken, authorizeRoles('admin'), RoleController.update);

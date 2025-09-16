@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -10,14 +11,22 @@ const Login = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Aquí deberías llamar a tu API de login
-      // Simulación:
-      if (username === 'admin' && password === 'admin') {
-        localStorage.setItem('token', 'demo-token');
-        localStorage.setItem('role', 'admin');
+      // Llamada real a la API de login
+      const res = await axios.post('/api/login', { username, password });
+      const { token, role, username: uname } = res.data;
+      if (!token || !role) {
+        setError('Login failed');
+        return;
+      }
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', role);
+      localStorage.setItem('username', uname || username);
+      if (role === 'admin') {
         navigate('/admin');
+      } else if (['gerente', 'setupSr', 'setup', 'production', 'produccion'].includes(role)) {
+        navigate('/user');
       } else {
-        setError('Invalid credentials');
+        setError('No access for this role');
       }
     } catch (err) {
       setError('Login failed');

@@ -15,9 +15,17 @@ class Worker {
   static async findAll() {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM worker', (err, results) => {
+      db.query(`
+  SELECT w.*, p.name AS position, u.username AS user
+  FROM worker w
+  LEFT JOIN position_catalog p ON w.position_id = p.id
+  LEFT JOIN user u ON w.user_id = u.id
+      `, (err, results) => {
         db.end();
-        if (err) return reject(err);
+        if (err) {
+          console.error('Error en Worker.findAll:', err);
+          return reject(err);
+        }
         resolve(results);
       });
     });

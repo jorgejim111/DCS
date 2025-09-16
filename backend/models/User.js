@@ -16,11 +16,14 @@ class User {
   static async findAll() {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM user', (err, results) => {
-        db.end();
-        if (err) return reject(err);
-        resolve(results);
-      });
+      db.query(
+        'SELECT u.id, u.username, r.name AS role, u.role_id FROM user u JOIN role r ON u.role_id = r.id',
+        (err, results) => {
+          db.end();
+          if (err) return reject(err);
+          resolve(results);
+        }
+      );
     });
   }
 
@@ -53,7 +56,14 @@ class User {
   static async update(id, data) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('UPDATE user SET username = ?, password = ?, role_id = ? WHERE id = ?', [data.username, data.password, data.role_id, id], (err, results) => {
+      let fields = ['username = ?', 'role_id = ?'];
+      let values = [data.username, data.role_id];
+      if (data.password) {
+        fields.push('password = ?');
+        values.push(data.password);
+      }
+      values.push(id);
+      db.query(`UPDATE user SET ${fields.join(', ')} WHERE id = ?`, values, (err, results) => {
         db.end();
         if (err) return reject(err);
         resolve(results.affectedRows > 0);

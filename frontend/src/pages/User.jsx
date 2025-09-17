@@ -9,6 +9,7 @@ const User = () => {
   React.useEffect(() => {
     const token = localStorage.getItem('token');
     const role = localStorage.getItem('role');
+    // console.log('User.jsx localStorage:', { token, role }); // DEBUG: eliminar en producción
     if (!token || !role) {
       navigate('/');
     }

@@ -15,12 +15,23 @@ const LoginModal = ({ open, onClose }) => {
     setError(null);
     try {
       const res = await login(username, password);
-      console.log('Login response:', res); // Imprime la respuesta en consola
-      localStorage.setItem('token', res.token);
-      if (res.role === 'admin') {
+  // console.log('Login response:', res); // DEBUG: eliminar en producción
+      const { token, role: rawRole, username: uname } = res;
+      if (!token || !rawRole) {
+        setError('Login failed');
+        return;
+      }
+      localStorage.setItem('token', token);
+      localStorage.setItem('role', rawRole);
+      localStorage.setItem('username', uname || username);
+      const normalizedRole = (rawRole || '').toLowerCase();
+      if (normalizedRole === 'admin') {
         navigate('/admin');
+      } else if (["gerente", "setupsr", "setup", "production", "produccion"].includes(normalizedRole)) {
+        navigate('/user');
       } else {
-        navigate('/');
+        setError('No access for this role');
+        return;
       }
       onClose();
     } catch (err) {

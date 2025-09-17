@@ -9,6 +9,7 @@
 | Azul Medio | #264893 | Menús, enlaces, hover effect        |
 | Azul Claro | #23B0E8 | Llamados a la acción, íconos        |
 | Gris Claro | #D3D9E1 | Fondos, secciones secundarias       |
+| Gris Intermedio | #E4E7ED | Botones secundarios, tarjetas neutras |
 | Gris Muy Claro | #F4F6F8 | Fondo general, formularios      |
 | Blanco    | #FFFFFF  | Texto sobre fondos oscuros          |
 

@@ -18,12 +18,15 @@ const Login = () => {
         setError('Login failed');
         return;
       }
+      // Guardar token, rol y username
       localStorage.setItem('token', token);
       localStorage.setItem('role', role);
       localStorage.setItem('username', uname || username);
-      if (role === 'admin') {
+      const normalizedRole = (role || '').toLowerCase();
+      console.log('Login role:', normalizedRole); // DEBUG
+      if (normalizedRole === 'admin') {
         navigate('/admin');
-      } else if (['gerente', 'setupSr', 'setup', 'production', 'produccion'].includes(role)) {
+      } else if (['gerente', 'setupsr', 'setup', 'production', 'produccion'].includes(normalizedRole)) {
         navigate('/user');
       } else {
         setError('No access for this role');

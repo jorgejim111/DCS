@@ -3,18 +3,18 @@ import { Link } from 'react-router-dom';
 
 const menuByRole = {
   produccion: [
-    { name: 'Home', path: '/user/home' },
+    { name: 'Home', path: '/user' },
     { name: 'Create Serial#', path: '/user/create-serial' },
     { name: 'Register Movement', path: '/user/register-movement' },
     { name: 'My History', path: '/user/my-history' },
   ],
   setup: [
-    { name: 'Home', path: '/user/home' },
+    { name: 'Home', path: '/user' },
     { name: 'Register Movement', path: '/user/register-movement' },
     { name: 'My History', path: '/user/my-history' },
   ],
   admin: [
-    { name: 'Home', path: '/user/home' },
+    { name: 'Home', path: '/user' },
     { name: 'Create Serial#', path: '/user/create-serial' },
     { name: 'Register Movement', path: '/user/register-movement' },
     { name: 'My History', path: '/user/my-history' },

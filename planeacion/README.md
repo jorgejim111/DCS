@@ -23,11 +23,15 @@ Todas las vistas de catálogos siguen el patrón para coherencia visual y funcio
 - **Seguridad y acceso:**
 	- Todas las acciones requieren autenticación y el rol adecuado (ej. admin).
 
-**Avances Septiembre 2025:**
+# Avances Septiembre 2025
+
 - Backend y frontend conectados con paginación y orden por medidas.
 - Catálogos muestran nombres descriptivos en vez de IDs.
 - Sidebar interactivo y consistente.
 - Lógica de activar/desactivar y edición probada en todos los catálogos principales.
+- UserLayout multirole implementado: header y sidebar adaptan acciones según el rol (admin, gerente, setups, setup, producción).
+- HomeUser.jsx: dashboard visual con botones grandes, colores y nuevos íconos profesionales (react-icons), siguiendo la guía de estilos y accesibilidad.
+- Base de navegación y acciones: todos los roles ven los accesos principales (Die History, Damage Report, Inventory), y los roles superiores agregan funciones avanzadas.
 - Documentación actualizada y código listo para siguiente ciclo.
 
 ¡Sesión finalizada! Todos los cambios están documentados y el sistema está listo para continuar.

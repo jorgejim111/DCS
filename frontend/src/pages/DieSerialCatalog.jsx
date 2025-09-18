@@ -83,50 +83,53 @@ const DieSerialCatalog = () => {
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4 text-blue-900">Die Serial Catalog</h2>
-      <div className="flex items-center gap-4 mb-2">
-        <input
-          type="text"
-          placeholder="Filter by Die Description..."
-          value={filter}
-          onChange={e => { setFilter(e.target.value); setPage(1); }}
-          className="border px-2 py-1 rounded w-64"
-        />
-        <div className="ml-auto flex gap-2">
+      <div className="flex items-center justify-between mb-2">
+        <div className="font-bold text-blue-900 text-lg">TOTAL: {filteredRecords.length}</div>
+        <div className="flex items-center gap-4">
+          <input
+            type="text"
+            placeholder="Filter by Die Description..."
+            value={filter}
+            onChange={e => { setFilter(e.target.value); setPage(1); }}
+            className="border px-2 py-1 rounded w-64"
+          />
+          <div className="flex gap-2">
+            <button
+              className={`px-3 py-1 rounded ${statusFilter === 'all' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+              onClick={() => { setStatusFilter('all'); setPage(1); }}
+            >All</button>
+            <button
+              className={`px-3 py-1 rounded ${statusFilter === 'circulation' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+              onClick={() => { setStatusFilter('circulation'); setPage(1); }}
+            >Circulation</button>
+            <button
+              className={`px-3 py-1 rounded ${statusFilter === 'new' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+              onClick={() => { setStatusFilter('new'); setPage(1); }}
+            >New</button>
+            <button
+              className={`px-3 py-1 rounded ${statusFilter === 'scraped' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
+              onClick={() => { setStatusFilter('scraped'); setPage(1); }}
+            >Scraped</button>
+          </div>
           <button
-            className={`px-3 py-1 rounded ${statusFilter === 'all' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
-            onClick={() => { setStatusFilter('all'); setPage(1); }}
-          >All</button>
+            className="bg-blue-700 text-white px-3 py-1 rounded disabled:opacity-50"
+            onClick={() => setPage(page > 1 ? page - 1 : 1)}
+            disabled={page === 1}
+          >Previous</button>
+          <span>Page {page} of {totalPages}</span>
           <button
-            className={`px-3 py-1 rounded ${statusFilter === 'circulation' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
-            onClick={() => { setStatusFilter('circulation'); setPage(1); }}
-          >Circulation</button>
-          <button
-            className={`px-3 py-1 rounded ${statusFilter === 'new' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
-            onClick={() => { setStatusFilter('new'); setPage(1); }}
-          >New</button>
-          <button
-            className={`px-3 py-1 rounded ${statusFilter === 'scraped' ? 'bg-blue-900 text-white' : 'bg-gray-200 text-blue-900'}`}
-            onClick={() => { setStatusFilter('scraped'); setPage(1); }}
-          >Scraped</button>
+            className="bg-blue-700 text-white px-3 py-1 rounded"
+            onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
+            disabled={page === totalPages}
+          >Next</button>
+          <label className="ml-4">Rows per page:
+            <select value={limit} onChange={e => setLimit(Number(e.target.value))} className="ml-2 px-2 py-1 border rounded">
+              {[10, 20, 50, 100].map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </label>
         </div>
-        <button
-          className="bg-blue-700 text-white px-3 py-1 rounded disabled:opacity-50"
-          onClick={() => setPage(page > 1 ? page - 1 : 1)}
-          disabled={page === 1}
-        >Previous</button>
-        <span>Page {page} of {totalPages}</span>
-        <button
-          className="bg-blue-700 text-white px-3 py-1 rounded"
-          onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
-          disabled={page === totalPages}
-        >Next</button>
-        <label className="ml-4">Rows per page:
-          <select value={limit} onChange={e => setLimit(Number(e.target.value))} className="ml-2 px-2 py-1 border rounded">
-            {[10, 20, 50, 100].map(n => (
-              <option key={n} value={n}>{n}</option>
-            ))}
-          </select>
-        </label>
       </div>
       <BaseTableAdvanced
         schema={dieSerialSchema.filter(f => f.key !== 'id')}

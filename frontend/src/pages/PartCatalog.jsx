@@ -17,7 +17,14 @@ const PartCatalog = () => {
     try {
       const token = localStorage.getItem('token');
       const parts = await getParts(token);
-      setData(parts);
+      // Ordenar ascendente por nombre
+      const sortedParts = parts.slice().sort((a, b) => {
+        if (a.name && b.name) {
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
+      });
+      setData(sortedParts);
     } catch (err) {
       if (err?.response?.status === 403) {
         navigate('/');

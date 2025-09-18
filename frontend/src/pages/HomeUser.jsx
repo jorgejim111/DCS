@@ -1,11 +1,22 @@
 
 
-import React from 'react';
+import React, { useState } from 'react';
 import { HiDocumentSearch, HiOutlineClipboardList } from 'react-icons/hi';
 import { MdOutlineInventory } from 'react-icons/md';
+import InventorySelectModal from '../components/modals/InventorySelectModal';
 
 
 const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
+  const [inventoryModalOpen, setInventoryModalOpen] = useState(false);
+
+  const handleInventoryClick = () => setInventoryModalOpen(true);
+  const handleInventoryClose = () => setInventoryModalOpen(false);
+  const handleInventorySelect = (type) => {
+    // Aquí puedes manejar la navegación o lógica según el tipo seleccionado
+    alert(`Selected inventory: ${type}`);
+    setInventoryModalOpen(false);
+  };
+
   return (
     <>
       <h1 className="text-2xl font-bold text-[#0C2C65] mb-4">Welcome, {username}!</h1>
@@ -31,11 +42,18 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
         <button
           className="bg-[#264893] hover:bg-[#0C2C65] text-white rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-[#0C2C65] focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
           style={{ minHeight: '170px' }}
+          onClick={handleInventoryClick}
         >
           <MdOutlineInventory className="text-5xl mb-2" />
           <span className="font-bold text-lg">Inventory</span>
         </button>
       </div>
+      <InventorySelectModal
+        open={inventoryModalOpen}
+        onClose={handleInventoryClose}
+        onSelect={handleInventorySelect}
+        role={role}
+      />
     </>
   );
 };

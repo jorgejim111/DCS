@@ -106,9 +106,13 @@ export default function DieDescriptionModal({ mode, record, onSave, onClose, inc
               required
             >
               <option value="">Select...</option>
-              {parts.filter(opt => opt.is_active).map(opt => (
-                <option key={opt.id} value={opt.id}>{opt.name}</option>
-              ))}
+              {parts
+                .filter(opt => opt.is_active)
+                .slice()
+                .sort((a, b) => a.name.localeCompare(b.name))
+                .map(opt => (
+                  <option key={opt.id} value={opt.id}>{opt.name}</option>
+                ))}
             </select>
           </div>
           <div className="mb-4">

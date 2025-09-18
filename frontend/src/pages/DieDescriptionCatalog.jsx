@@ -5,16 +5,22 @@ import { dieDescriptionSchema } from '../schemas/dieDescriptionSchema';
 import * as dieDescriptionService from '../services/dieDescriptionService';
 import DieDescriptionModal from '../components/modals/DieDescriptionModal';
 
+
 const DieDescriptionCatalog = () => {
-const [records, setRecords] = useState([]);
-const [modalOpen, setModalOpen] = useState(false);
-const [editRecord, setEditRecord] = useState(null);
-const [selectOptions, setSelectOptions] = useState({});
+  const [records, setRecords] = useState([]);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [editRecord, setEditRecord] = useState(null);
+  const [selectOptions, setSelectOptions] = useState({});
+  const [page, setPage] = useState(1);
+  const [limit, setLimit] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
  // Toggle activar/desactivar
   const handleToggleActive = async (row) => {
     try {
-      await dieDescriptionService.updateDieDescription(row.id, { is_active: !row.is_active });
+      // Asegura que is_active sea booleano o numérico correcto
+      const currentActive = row.is_active === true || row.is_active === 1 || row.is_active === 'Active';
+      await dieDescriptionService.updateDieDescription(row.id, { is_active: currentActive ? 0 : 1 });
       await fetchRecords();
     } catch (error) {
       alert('Error changing status.');
@@ -23,7 +29,19 @@ const [selectOptions, setSelectOptions] = useState({});
   // Fetch all records
   const fetchRecords = async () => {
     const res = await dieDescriptionService.getAllDieDescriptions();
-    setRecords(res.data);
+    // Normaliza is_active a 1/0 para lógica de botones
+    const normalized = res.data.map(row => ({
+      ...row,
+      is_active: row.is_active === true || row.is_active === 1 || row.is_active === 'Active' ? 1 : 0
+    }));
+    // Ordena ascendente por die_description
+    const sorted = normalized.slice().sort((a, b) => {
+      if (a.die_description && b.die_description) {
+        return a.die_description.localeCompare(b.die_description);
+      }
+      return 0;
+    });
+    setRecords(sorted);
   };
 
   // Fetch select options for foreign keys
@@ -67,17 +85,56 @@ const [selectOptions, setSelectOptions] = useState({});
     fetchRecords();
   };
 
+  // Paginación y actualización de totalPages
+  useEffect(() => {
+    setTotalPages(Math.max(1, Math.ceil(records.length / limit)));
+    if (page > Math.max(1, Math.ceil(records.length / limit))) {
+      setPage(1);
+    }
+  }, [records, limit]);
+
+  const paginatedData = records.slice((page - 1) * limit, page * limit);
+
   return (
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-4 text-blue-900">Die Description Catalog</h2>
+      <div className="flex items-center gap-4 mb-2">
+        <div className="ml-auto flex gap-2">
+          <button
+            className={
+              `px-3 py-1 rounded bg-blue-700 text-white disabled:opacity-50`
+            }
+            onClick={() => setPage(page > 1 ? page - 1 : 1)}
+            disabled={page === 1}
+          >Previous</button>
+          <span>Page {page} of {totalPages}</span>
+          <button
+            className={
+              `px-3 py-1 rounded bg-blue-700 text-white disabled:opacity-50`
+            }
+            onClick={() => setPage(page < totalPages ? page + 1 : totalPages)}
+            disabled={page === totalPages}
+          >Next</button>
+          <label className="ml-4">Rows per page:
+            <select value={limit} onChange={e => setLimit(Number(e.target.value))} className="ml-2 px-2 py-1 border rounded">
+              {[10, 20, 50, 100].map(n => (
+                <option key={n} value={n}>{n}</option>
+              ))}
+            </select>
+          </label>
+        </div>
+      </div>
       <BaseTableAdvanced
-        schema={dieDescriptionSchema.filter(f => f.key !== 'id')}
-        data={records.map(row => ({
+        schema={[
+          ...dieDescriptionSchema.filter(f => f.key !== 'id'),
+          { key: 'status', label: 'Active' },
+        ]}
+        data={paginatedData.map(row => ({
           ...row,
           inch: row.inch,
           part: row.part,
           description: row.description,
-          is_active: row.is_active ? 'Active' : 'Inactive',
+          status: row.is_active === 1 ? 'Active' : 'Inactive',
         }))}
         onEdit={rec => { setEditRecord(rec); setModalOpen(true); }}
         onToggleActive={handleToggleActive}

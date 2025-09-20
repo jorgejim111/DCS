@@ -124,10 +124,10 @@ El sistema contempla diferentes roles, cada uno con permisos y acciones específ
     - Revisa y gestiona Damage Reports (DR).
     - Genera reportes de movimientos a circulación.
     - Solicita nuevos troqueles (require new dies).
+    - Crea nuevos serial#.
 - **Set up:**
     - Consulta inventarios.
     - Mueve troqueles a circulación.
-    - Crea nuevos serial#.
     - Genera Damage Reports.
     - Realiza arreglos y mantenimiento de troqueles.
     - Instala troqueles en líneas.

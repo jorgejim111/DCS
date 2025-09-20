@@ -32,6 +32,13 @@ Todas las vistas de catálogos siguen el patrón para coherencia visual y funcio
 - UserLayout multirole implementado: header y sidebar adaptan acciones según el rol (admin, gerente, setups, setup, producción).
 - HomeUser.jsx: dashboard visual con botones grandes, colores y nuevos íconos profesionales (react-icons), siguiendo la guía de estilos y accesibilidad.
 - Base de navegación y acciones: todos los roles ven los accesos principales (Die History, Damage Report, Inventory), y los roles superiores agregan funciones avanzadas.
+- Modal de Damage Report completamente rediseñado:
+	- Todos los campos obligatorios y validados según catálogo.
+	- Inputs con filtrado ágil y validación estricta (input+datalist).
+	- Autocompletado de Inch, Part y Description al seleccionar Serial.
+	- Botón "Save Damage Report" con idioma consistente.
+	- Botón Print solo visible al consultar un DR existente (pendiente de lógica final).
+	- UX mejorada para evitar errores de captura y asegurar trazabilidad.
 - Documentación actualizada y código listo para siguiente ciclo.
 
 ¡Sesión finalizada! Todos los cambios están documentados y el sistema está listo para continuar.
@@ -40,7 +47,7 @@ Todas las vistas de catálogos siguen el patrón para coherencia visual y funcio
 ---
 
 ## Visión y Equipo
-
+recuerda usar ekl
 Este proyecto es el resultado de la colaboración entre dos expertos: tú, gestor de troqueles, y yo (copilot), programador especializado. El objetivo es migrar y modernizar el sistema de gestión de troqueles, creciendo juntos profesionalmente y asegurando calidad, trazabilidad y escalabilidad.
 
 "Unidos para ganar: cada avance es un paso hacia el crecimiento del equipo y la empresa."

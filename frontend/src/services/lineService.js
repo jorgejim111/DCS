@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 export const getLines = async (token) => {
-  const response = await axios.get('/api/line/all', {
+  const response = await axios.get('/api/line/active', {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;

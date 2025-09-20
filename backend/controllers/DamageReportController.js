@@ -7,6 +7,34 @@ const damageReportSchema = yup.object().shape({
 });
 
 module.exports = {
+  // GET /api/damage-report/active-ids
+  async getActiveIds(req, res) {
+    try {
+      const filter = req.query.filter || '';
+      const db = require('../db/connection')();
+      let sql = 'SELECT id FROM damage_report WHERE is_active = 1';
+      let params = [];
+      if (filter) {
+        sql += ' AND id LIKE ?';
+        params.push(`%${filter}%`);
+      }
+      db.query(sql, params, (err, results) => {
+        db.end();
+        if (err) return res.status(500).json({ error: err.message });
+        res.json(results.map(r => r.id));
+      });
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching active damage report ids', details: error.message });
+    }
+  },
+  async getNextId(req, res) {
+    try {
+      const nextId = await DamageReport.getNextId();
+      res.json({ nextId });
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching next damage report id', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
       const page = parseInt(req.query.page) || 1;

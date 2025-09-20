@@ -19,5 +19,13 @@ const getAll = async ({ page, startDate, endDate }) => {
   return res.data;
 };
 
+
+export const getSerialDetailsForReport = (id) => {
+  const token = localStorage.getItem('token');
+  return axios.get(`/api/die-serial/${id}/details-for-report`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+};
+
 const damageReportService = { getAll };
 export default damageReportService;

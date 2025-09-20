@@ -4,6 +4,7 @@ const InventorySelectModal = ({ open, onClose, onSelect, role }) => {
   if (!open) return null;
   // Solo mostrar las opciones permitidas según el rol
   const isProduction = role === "production" || role === "produccion";
+  const isManager = role === "gerente" || role === "setupSr" || role === "setupsr" || role === "setup";
   return (
     <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
       <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md relative">
@@ -16,7 +17,7 @@ const InventorySelectModal = ({ open, onClose, onSelect, role }) => {
           >
             Circulation
           </button>
-          {!isProduction && (
+          {isManager && (
             <button
               className="bg-[#D3D9E1] hover:bg-[#264893] text-[#264893] hover:text-white font-semibold px-4 py-3 rounded transition text-lg"
               onClick={() => onSelect("open-damage-report")}
@@ -24,7 +25,7 @@ const InventorySelectModal = ({ open, onClose, onSelect, role }) => {
               Open Damage Report
             </button>
           )}
-          {!isProduction && (
+          {isManager && (
             <button
               className="bg-[#D3D9E1] hover:bg-[#264893] text-[#264893] hover:text-white font-semibold px-4 py-3 rounded transition text-lg"
               onClick={() => onSelect("new")}

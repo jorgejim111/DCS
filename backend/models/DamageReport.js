@@ -1,6 +1,16 @@
 const getConnection = require('../db/connection');
 
 class DamageReport {
+  static async getNextId() {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
+      db.query('SELECT AUTO_INCREMENT as nextId FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = "damage_report"', (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results[0]?.nextId || 1);
+      });
+    });
+  }
   static async findById(id) {
     const db = getConnection();
     return new Promise((resolve, reject) => {

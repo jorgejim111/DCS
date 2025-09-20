@@ -6,7 +6,7 @@ const getAuthHeader = () => {
 };
 
 export const getProducts = async () => {
-  const response = await axios.get('/api/product', {
+  const response = await axios.get('/api/product/active', {
     headers: getAuthHeader()
   });
   return response.data;

@@ -1,3 +1,4 @@
+
 const DieSerial = require('../models/DieSerial');
 const yup = require('yup');
 
@@ -11,6 +12,17 @@ const dieSerialSchema = yup.object().shape({
 });
 
 module.exports = {
+  // GET /api/die-serial/:id/details-for-report
+  async getDetailsForReport(req, res) {
+    try {
+      const { id } = req.params;
+      const details = await DieSerial.getDetailsForReport(id);
+      if (!details) return res.status(404).json({ message: 'Not found' });
+      res.json(details);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
   async activate(req, res) {
     try {
       const { id } = req.params;

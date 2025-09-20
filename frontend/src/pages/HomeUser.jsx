@@ -1,21 +1,33 @@
-
-
 import React, { useState } from 'react';
+import InventoryCatalogModal from '../components/modals/InventoryCatalogModal';
+import useCirculationSerials from '../hooks/useCirculationSerials';
 import { HiDocumentSearch, HiOutlineClipboardList } from 'react-icons/hi';
 import { MdOutlineInventory } from 'react-icons/md';
 import InventorySelectModal from '../components/modals/InventorySelectModal';
-
+import DamageReportModal from '../components/modals/DamageReportModal';
 
 const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
   const [inventoryModalOpen, setInventoryModalOpen] = useState(false);
+  const [catalogModalOpen, setCatalogModalOpen] = useState(false);
+  const [catalogType, setCatalogType] = useState(null);
+  const [damageModalOpen, setDamageModalOpen] = useState(false);
+  const { data: circulationSerials, loading: loadingCirculation } = useCirculationSerials();
 
   const handleInventoryClick = () => setInventoryModalOpen(true);
   const handleInventoryClose = () => setInventoryModalOpen(false);
   const handleInventorySelect = (type) => {
-    // Aquí puedes manejar la navegación o lógica según el tipo seleccionado
-    alert(`Selected inventory: ${type}`);
     setInventoryModalOpen(false);
+    setCatalogType(type);
+    setCatalogModalOpen(true);
   };
+
+  const handleCatalogClose = () => {
+    setCatalogModalOpen(false);
+    setCatalogType(null);
+  };
+
+  const handleDamageClick = () => setDamageModalOpen(true);
+  const handleDamageClose = () => setDamageModalOpen(false);
 
   return (
     <>
@@ -34,6 +46,7 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
         <button
           className="bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
           style={{ minHeight: '170px' }}
+          onClick={handleDamageClick}
         >
           <HiDocumentSearch className="text-5xl mb-2" />
           <span className="font-bold text-lg">Damage Report</span>
@@ -54,6 +67,16 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
         onSelect={handleInventorySelect}
         role={role}
       />
+      {catalogModalOpen && catalogType === 'circulation' && (
+        <InventoryCatalogModal
+          type="circulation"
+          data={circulationSerials}
+          onClose={handleCatalogClose}
+        />
+      )}
+      {damageModalOpen && (
+        <DamageReportModal onClose={handleDamageClose} />
+      )}
     </>
   );
 };

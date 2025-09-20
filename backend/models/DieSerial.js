@@ -1,6 +1,26 @@
 const getConnection = require('../db/connection');
 
 class DieSerial {
+  // Devuelve los datos de inch, part y description para un die_serial dado su id
+  static async getDetailsForReport(id) {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
+      db.query(`
+        SELECT ds.id, ds.serial_number, d.id AS die_description_id, d.die_description,
+               i.name AS inch, p.name AS part, dc.name AS description
+        FROM die_serial ds
+        LEFT JOIN die_description d ON ds.die_description_id = d.id
+        LEFT JOIN inch_catalog i ON d.inch_id = i.id
+        LEFT JOIN part_catalog p ON d.part_id = p.id
+        LEFT JOIN description_catalog dc ON d.description_id = dc.id
+        WHERE ds.id = ?
+      `, [id], (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results[0]);
+      });
+    });
+  }
   static async findById(id) {
     const db = getConnection();
     return new Promise((resolve, reject) => {

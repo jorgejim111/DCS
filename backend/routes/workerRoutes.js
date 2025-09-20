@@ -4,7 +4,7 @@ const WorkerController = require('../controllers/WorkerController');
 const authenticateToken = require('../middleware/authMiddleware');
 const authorizeRoles = require('../middleware/roleMiddleware');
 
-router.get('/', authenticateToken, authorizeRoles('admin'), WorkerController.getAll);
+router.get('/', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr', 'setup', 'production'), WorkerController.getAll);
 router.get('/:id', authenticateToken, authorizeRoles('admin'), WorkerController.getById);
 router.post('/', authenticateToken, authorizeRoles('admin'), WorkerController.create);
 router.put('/:id', authenticateToken, authorizeRoles('admin'), WorkerController.update);

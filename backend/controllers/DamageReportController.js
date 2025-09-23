@@ -2,8 +2,9 @@ const DamageReport = require('../models/DamageReport');
 const yup = require('yup');
 
 const damageReportSchema = yup.object().shape({
-  // Agrega aquí los campos requeridos según el modelo
-  description: yup.string().required('Description is required'),
+  // Validar que description_dr_id es requerido y es número
+  description_dr_id: yup.number().required('Description of Damage is required'),
+  // Puedes agregar aquí otros campos requeridos si lo deseas
 });
 
 module.exports = {
@@ -30,6 +31,7 @@ module.exports = {
   async getNextId(req, res) {
     try {
       const nextId = await DamageReport.getNextId();
+      console.log('DamageReport getNextId:', nextId);
       res.json({ nextId });
     } catch (error) {
       res.status(500).json({ error: 'Error fetching next damage report id', details: error.message });

@@ -4,7 +4,7 @@ class DamageReport {
   static async getNextId() {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('SELECT AUTO_INCREMENT as nextId FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = "damage_report"', (err, results) => {
+      db.query('SELECT IFNULL(MAX(id), 0) + 1 AS nextId FROM damage_report', (err, results) => {
         db.end();
         if (err) return reject(err);
         resolve(results[0]?.nextId || 1);
@@ -13,8 +13,42 @@ class DamageReport {
   }
   static async findById(id) {
     const db = getConnection();
+    const sql = `
+      SELECT dr.id,
+        ds.serial_number,
+        p.name AS product_name,
+        l.name AS line_name,
+        ws.name AS supervisor_name,
+        wo.name AS operator_name,
+        ddesc.name AS description_dr,
+        e.name AS explanation,
+        dr.note,
+        dr.if_sample,
+        dr.status_id,
+        dr.verdict,
+        dr.created_at,
+        dr.updated_at,
+        dd.die_description,
+        i.name AS inch,
+        pa.name AS part,
+        dc.name AS description
+      FROM damage_report dr
+      LEFT JOIN die_serial ds ON dr.die_serial_id = ds.id
+      LEFT JOIN die_description dd ON ds.die_description_id = dd.id
+      LEFT JOIN inch_catalog i ON dd.inch_id = i.id
+      LEFT JOIN part_catalog pa ON dd.part_id = pa.id
+      LEFT JOIN description_catalog dc ON dd.description_id = dc.id
+      LEFT JOIN product_catalog p ON dr.product_id = p.id
+      LEFT JOIN line_catalog l ON dr.line_id = l.id
+      LEFT JOIN worker ws ON dr.supervisor_id = ws.id
+      LEFT JOIN worker wo ON dr.operator_id = wo.id
+      LEFT JOIN description_dr_catalog ddesc ON dr.description_dr_id = ddesc.id
+      LEFT JOIN explanation_catalog e ON dr.explanation_id = e.id
+      WHERE dr.id = ?
+      LIMIT 1
+    `;
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM damage_report WHERE id = ?', [id], (err, results) => {
+      db.query(sql, [id], (err, results) => {
         db.end();
         if (err) return reject(err);
         resolve(results[0]);

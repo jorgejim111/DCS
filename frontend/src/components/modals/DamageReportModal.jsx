@@ -1,8 +1,9 @@
+import { updateDieSerial, getAllDieSerials } from '../../services/dieSerialService';
 
 import React, { useEffect, useState } from 'react';
 import useCirculationSerials from '../../hooks/useCirculationSerials';
 import axios from 'axios';
-import { getSerialDetailsForReport } from '../../services/damageReportService';
+import { getSerialDetailsForReport, createDamageReport } from '../../services/damageReportService';
 import { getProducts } from '../../services/productService';
 import { getLines } from '../../services/lineService';
 import workerService from '../../services/workerService';
@@ -10,10 +11,13 @@ import { getDescriptionDrs } from '../../services/descriptionDrService';
 import { getExplanations } from '../../services/explanationService';
 
 const DamageReportModal = ({ onClose }) => {
+  // Modo vista: true si se está consultando un DR existente
+  const [isViewMode, setIsViewMode] = useState(false);
   // Estados para los campos
 
   const today = new Date().toISOString().slice(0, 10);
   const [nextId, setNextId] = useState('');
+  const [searchId, setSearchId] = useState('');
   const [serialId, setSerialId] = useState('');
   const [serialInput, setSerialInput] = useState('');
   const { data: serials, loading: loadingSerials } = useCirculationSerials();
@@ -56,7 +60,11 @@ const DamageReportModal = ({ onClose }) => {
     axios.get('/api/damage-report/next/id', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
-      .then(res => setNextId(res.data.nextId))
+      .then(res => {
+        // Si el backend devuelve el último ID registrado, sumamos 1 para mostrar el siguiente
+        const next = Number(res.data.nextId);
+        setNextId(isNaN(next) ? '(auto)' : String(next + 1));
+      })
       .catch(() => setNextId('(auto)'));
     // Cargar productos activos
     getProducts()
@@ -154,11 +162,125 @@ const DamageReportModal = ({ onClose }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  // Guardar (ejemplo, aquí iría la lógica de submit)
-  const handleSubmit = (e) => {
+
+  // Buscar DR existente por ID (cuando se da click en Search)
+  const handleSearch = async (e) => {
     e.preventDefault();
+    // Permitir buscar por el ID ingresado en searchId
+    const idToSearch = searchId || nextId;
+    if (!idToSearch || idToSearch === '(auto)') return;
+    try {
+      const token = localStorage.getItem('token');
+      const res = await axios.get(`/api/damage-report/${idToSearch}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const dr = res.data;
+      // Llenar los campos con los datos del DR (ajusta los nombres según tu backend)
+  setSerialInput(dr.serial_number || '');
+  setProductInput(dr.product_name || dr.product || '');
+  setLineInput(dr.line_name || dr.line || '');
+  setInch(dr.inch || '');
+  setPart(dr.part || '');
+  setDescription(dr.die_description || dr.description || '');
+  setSupervisorInput(dr.supervisor_name || dr.supervisor || '');
+  setOperatorInput(dr.operator_name || dr.operator || '');
+  setDescriptionDrInput(dr.description_dr || '');
+  setExplanationInput(dr.explanation || '');
+  setSampleNet(dr.if_sample === 1 ? 'Yes' : dr.if_sample === 0 ? 'No' : '');
+  setSupervisorExplanation(dr.supervisor_explanation || dr.note || '');
+  setIsViewMode(true);
+  setErrors({});
+    } catch (err) {
+      setErrors({ search: 'Damage Report not found.' });
+      setIsViewMode(false);
+    }
+  };
+
+  // Guardar Damage Report en la base de datos
+  const [saveStatus, setSaveStatus] = useState('');
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setSaveStatus('');
     if (!validate()) return;
-    // ...enviar datos a backend
+    try {
+      // Armar el objeto de datos según la tabla
+      const data = {
+        die_serial_id: serialId || null,
+        line_id: lineId || null,
+        product_id: productId || null,
+        operator_id: operatorId || null,
+        supervisor_id: supervisorId || null,
+        description_dr_id: descriptionDrId || null,
+        explanation_id: explanationId || null,
+        if_sample: sampleNet === 'Yes' ? 1 : 0,
+        note: supervisorExplanation || null,
+        status_id: 4 // ID correcto para "Open DR"
+      };
+      console.log('DamageReport POST data:', data);
+      // Guardar Damage Report y obtener el ID
+      const drResult = await createDamageReport(data);
+      let damageReportId = drResult;
+      // Si el backend devuelve un objeto con id, úsalo
+      if (drResult && typeof drResult === 'object' && drResult.id) {
+        damageReportId = drResult.id;
+      }
+      // Cambiar status del die_serial a 4 (Damage Report)
+      try {
+        // Obtener el die_serial completo
+        const res = await axios.get(`/api/die-serial/${serialId}`, {
+          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+        });
+        const serial = res.data;
+        // Log para depuración
+        console.log('die_serial a actualizar:', serial);
+        // Enviar todos los campos requeridos junto con el nuevo status_id, usando 0 si algún campo es null
+        await updateDieSerial(serialId, {
+          serial_number: serial.serial_number,
+          die_description_id: serial.die_description_id,
+          status_id: 4,
+          inner: serial.inner == null ? 0 : serial.inner,
+          outer: serial.outer == null ? 0 : serial.outer,
+          proudness: serial.proudness == null ? 0 : serial.proudness
+        });
+      } catch (err) {
+        console.error('Error updating die_serial status:', err);
+      }
+
+      // Paso 3: Crear registro en die_serial_history
+      try {
+        // Importar aquí para evitar ciclos si es necesario
+        const { createDieSerialHistory } = await import('../../services/dieSerialHistoryService');
+        await createDieSerialHistory({
+          die_serial_id: serialId,
+          status_id: 4,
+          note: supervisorExplanation || null,
+          damage_report_id: damageReportId,
+          observed_damage_id: descriptionDrId,
+          performed_by: operatorId, // O supervisorId según tu lógica
+          product_id: productId,
+          line_id: lineId
+        });
+      } catch (err) {
+        console.error('Error creating die_serial_history:', err);
+      }
+
+      setSaveStatus('Damage Report saved successfully!');
+      setIsViewMode(true); // Opcional: pasar a modo vista tras guardar
+      // Cerrar el modal tras guardar exitosamente
+      setTimeout(() => {
+        if (typeof onClose === 'function') onClose();
+      }, 500); // Da tiempo a mostrar el mensaje de éxito brevemente
+    } catch (err) {
+      let msg = 'Error saving Damage Report.';
+      if (err.response && err.response.data) {
+        console.error('Backend error:', err.response.data);
+        if (typeof err.response.data === 'string') msg += ' ' + err.response.data;
+        else if (err.response.data.message) msg += ' ' + err.response.data.message;
+        else if (err.response.data.error) msg += ' ' + err.response.data.error;
+        else msg += ' ' + JSON.stringify(err.response.data);
+      }
+      setSaveStatus(msg);
+    }
   };
 
   return (
@@ -224,6 +346,10 @@ const DamageReportModal = ({ onClose }) => {
             </ul>
           </div>
         )}
+        {/* Mensaje de guardado */}
+        {saveStatus && (
+          <div className={`px-6 pt-2 pb-2 text-xs font-bold ${saveStatus.includes('success') ? 'text-green-700' : 'text-red-700'}`}>{saveStatus}</div>
+        )}
   {/* Datos principales reacomodados en grid 4x3 */}
   <form className="px-6 py-4" onSubmit={handleSubmit} autoComplete="off">
           {/* ID Damage Report y Search */}
@@ -231,9 +357,15 @@ const DamageReportModal = ({ onClose }) => {
             <div className="flex flex-row items-end gap-2">
               <div className="flex-1 flex flex-col">
                 <label className="text-xs font-bold text-blue-900 mb-1">ID Damage Report</label>
-                <input className="border px-2 py-1 rounded bg-gray-100" value={nextId || '(auto)'} disabled />
+                <input
+                  className="border px-2 py-1 rounded"
+                  value={searchId}
+                  onChange={e => setSearchId(e.target.value)}
+                  placeholder={nextId || '(auto)'}
+                  autoComplete="off"
+                />
               </div>
-              <button className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded shadow text-sm mb-1">Search</button>
+              <button type="button" onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded shadow text-sm mb-1">Search</button>
             </div>
             <div className="flex flex-col">
               <label className="text-xs font-bold text-blue-900 mb-1">Date</label>
@@ -269,7 +401,11 @@ const DamageReportModal = ({ onClose }) => {
                 className="border px-2 py-1 rounded"
                 placeholder="Select product..."
                 value={productInput}
-                onChange={e => setProductInput(e.target.value)}
+                onChange={e => {
+                  setProductInput(e.target.value);
+                  const obj = products.find(p => p.name === e.target.value);
+                  setProductId(obj ? obj.id : '');
+                }}
                 list="product-list"
                 autoComplete="off"
                 required
@@ -289,7 +425,11 @@ const DamageReportModal = ({ onClose }) => {
                 className="border px-2 py-1 rounded"
                 placeholder="Select line..."
                 value={lineInput}
-                onChange={e => setLineInput(e.target.value)}
+                onChange={e => {
+                  setLineInput(e.target.value);
+                  const obj = lines.find(l => l.name === e.target.value);
+                  setLineId(obj ? obj.id : '');
+                }}
                 list="line-list"
                 autoComplete="off"
                 required
@@ -317,7 +457,11 @@ const DamageReportModal = ({ onClose }) => {
                 className="border px-2 py-1 rounded"
                 placeholder="Select supervisor..."
                 value={supervisorInput}
-                onChange={e => setSupervisorInput(e.target.value)}
+                onChange={e => {
+                  setSupervisorInput(e.target.value);
+                  const obj = supervisors.find(s => s.name === e.target.value);
+                  setSupervisorId(obj ? obj.id : '');
+                }}
                 list="supervisor-list"
                 autoComplete="off"
                 required
@@ -341,7 +485,11 @@ const DamageReportModal = ({ onClose }) => {
                 className="border px-2 py-1 rounded"
                 placeholder="Select operator..."
                 value={operatorInput}
-                onChange={e => setOperatorInput(e.target.value)}
+                onChange={e => {
+                  setOperatorInput(e.target.value);
+                  const obj = operators.find(o => o.name === e.target.value);
+                  setOperatorId(obj ? obj.id : '');
+                }}
                 list="operator-list"
                 autoComplete="off"
                 required
@@ -363,7 +511,11 @@ const DamageReportModal = ({ onClose }) => {
               className="border px-2 py-1 rounded w-full"
               placeholder="Select description..."
               value={descriptionDrInput}
-              onChange={e => setDescriptionDrInput(e.target.value)}
+              onChange={e => {
+                setDescriptionDrInput(e.target.value);
+                const obj = descriptionsDr.find(d => d.name === e.target.value);
+                setDescriptionDrId(obj ? obj.id : '');
+              }}
               list="description-dr-list"
               autoComplete="off"
               required
@@ -383,7 +535,11 @@ const DamageReportModal = ({ onClose }) => {
                 className="border px-2 py-1 rounded w-full"
                 placeholder="Select explanation..."
                 value={explanationInput}
-                onChange={e => setExplanationInput(e.target.value)}
+                onChange={e => {
+                  setExplanationInput(e.target.value);
+                  const obj = explanations.find(ex => ex.name === e.target.value);
+                  setExplanationId(obj ? obj.id : '');
+                }}
                 list="explanation-list"
                 autoComplete="off"
                 required
@@ -422,8 +578,12 @@ const DamageReportModal = ({ onClose }) => {
           </div>
             {/* Botones */}
             <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
-              <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>
-              <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>
+              {/* Mostrar Print solo en modo vista, Save solo en modo creación */}
+              {isViewMode ? (
+                <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>
+              ) : (
+                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>
+              )}
               <button type="button" onClick={onClose} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Exit</button>
             </div>
           </div>

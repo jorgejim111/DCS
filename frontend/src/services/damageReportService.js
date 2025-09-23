@@ -27,5 +27,12 @@ export const getSerialDetailsForReport = (id) => {
   });
 };
 
-const damageReportService = { getAll };
+
+export const createDamageReport = async (data) => {
+  const config = getAuthConfig();
+  const res = await axios.post(API_URL, data, config);
+  return res.data;
+};
+
+const damageReportService = { getAll, createDamageReport };
 export default damageReportService;

@@ -40,7 +40,7 @@ Todas las vistas de catálogos siguen el patrón para coherencia visual y funcio
 	- Botón Print solo visible al consultar un DR existente (pendiente de lógica final).
 	- UX mejorada para evitar errores de captura y asegurar trazabilidad.
 - Documentación actualizada y código listo para siguiente ciclo.
-
+npm 
 ¡Sesión finalizada! Todos los cambios están documentados y el sistema está listo para continuar.
 # Proyecto Gestión de Troqueles — Prompt y Guía de Trabajo
 

@@ -49,8 +49,16 @@ module.exports = {
   },
   async getAll(req, res) {
     try {
-      // Get pagination, order, and status filter params from query
-      const { page, limit, orderBy, orderDir, statusFilter } = req.query;
+      // Check for serial_number filter
+      const { serial_number, page, limit, orderBy, orderDir, statusFilter } = req.query;
+      if (serial_number) {
+        const die = await DieSerial.findBySerialNumber(serial_number);
+        if (!die) {
+          return res.status(404).json({ error: 'Die serial not found' });
+        }
+        return res.json(die);
+      }
+      // Otherwise, return all (with optional filters)
       const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir, statusFilter });
       res.json(serials);
     } catch (error) {

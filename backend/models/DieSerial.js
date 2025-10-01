@@ -1,6 +1,26 @@
+// ...existing code...
 const getConnection = require('../db/connection');
 
 class DieSerial {
+  // Buscar die_serial por serial_number (string) y hacer join para traer inch, part, description
+  static async findBySerialNumber(serial_number) {
+    const db = getConnection();
+    return new Promise((resolve, reject) => {
+      db.query(`
+        SELECT ds.*, d.die_description, i.name AS inch, p.name AS part, dc.name AS description
+        FROM die_serial ds
+        LEFT JOIN die_description d ON ds.die_description_id = d.id
+        LEFT JOIN inch_catalog i ON d.inch_id = i.id
+        LEFT JOIN part_catalog p ON d.part_id = p.id
+        LEFT JOIN description_catalog dc ON d.description_id = dc.id
+        WHERE ds.serial_number = ?
+      `, [serial_number], (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results[0]);
+      });
+    });
+  }
   // Devuelve los datos de inch, part y description para un die_serial dado su id
   static async getDetailsForReport(id) {
     const db = getConnection();

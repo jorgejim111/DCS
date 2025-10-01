@@ -2,7 +2,7 @@ import React from 'react';
 // importación eliminada, migrar a modal específico
 
 // Recibe: schema (array de campos), data (array de registros), onAdd, onEdit, onToggleActive
-export default function BaseTableAdvanced({ schema, data, onAdd, onEdit, onToggleActive }) {
+export default function BaseTableAdvanced({ schema, data, onAdd, onEdit, onToggleActive, onMoveToCirculation }) {
   // Columnas dinámicas
   const columns = Array.isArray(schema) ? schema.filter(f => f.key !== 'created_at' && f.key !== 'updated_at' && !f.hideInTable) : [];
 
@@ -39,6 +39,14 @@ export default function BaseTableAdvanced({ schema, data, onAdd, onEdit, onToggl
                     onClick={() => onToggleActive(row)}
                   >
                     {row.is_active ? 'Deactivate' : 'Activate'}
+                  </button>
+                )}
+                {onMoveToCirculation && (
+                  <button
+                    className="bg-green-700 hover:bg-green-900 text-white px-3 py-1 rounded"
+                    onClick={() => onMoveToCirculation(row)}
+                  >
+                    Move to Circulation
                   </button>
                 )}
               </td>

@@ -51,9 +51,18 @@ class DieSerialHistory {
   static async findBySerialId(die_serial_id) {
     const db = getConnection();
     return new Promise((resolve, reject) => {
-      db.query('SELECT * FROM die_serial_history WHERE die_serial_id = ?', [die_serial_id], (err, results) => {
+      db.query(`
+        SELECT h.*, s.name AS status
+        FROM die_serial_history h
+        LEFT JOIN status_catalog s ON h.status_id = s.id
+        WHERE h.die_serial_id = ?
+        ORDER BY h.id DESC
+      `, [die_serial_id], (err, results) => {
         db.end();
-        if (err) return reject(err);
+        if (err) {
+          console.error('SQL error in findBySerialId:', err);
+          return reject(new Error('Database error: ' + err.message));
+        }
         resolve(results);
       });
     });

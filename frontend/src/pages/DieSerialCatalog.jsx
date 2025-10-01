@@ -1,10 +1,29 @@
 import React, { useEffect, useState } from 'react';
+import Modal from '../components/modals/Modal';
 import BaseTableAdvanced from '../components/BaseTableAdvanced';
 import { dieSerialSchema } from '../schemas/dieSerialSchema';
 import * as dieSerialService from '../services/dieSerialService';
 import DieSerialModal from '../components/modals/DieSerialModal';
 
-const DieSerialCatalog = () => {
+const DieSerialCatalog = (props) => {
+  // Use role prop or default to 'produccion'
+  const role = typeof window !== 'undefined' && window.currentUserRole ? window.currentUserRole : (typeof props?.role === 'string' ? props.role : 'produccion');
+  const [moveModalOpen, setMoveModalOpen] = useState(false);
+  const [moveRecord, setMoveRecord] = useState(null);
+  const [queriesModalOpen, setQueriesModalOpen] = useState(false);
+  // Move to Circulation handler
+  const handleMoveToCirculation = (row) => {
+    setMoveRecord(row);
+    setMoveModalOpen(true);
+  };
+
+  const confirmMoveToCirculation = async () => {
+    if (!moveRecord) return;
+    await dieSerialService.updateDieSerial(moveRecord.id, { ...moveRecord, status_id: 2 }); // 2 = Circulation (adjust if needed)
+    setMoveModalOpen(false);
+    setMoveRecord(null);
+    fetchRecords();
+  };
   const [records, setRecords] = useState([]);
   const [statusFilter, setStatusFilter] = useState('circulation');
   const [filter, setFilter] = useState('');
@@ -131,13 +150,51 @@ const DieSerialCatalog = () => {
           </label>
         </div>
       </div>
+      <div className="flex justify-between items-center mb-2">
+        <div>
+          <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-2" onClick={() => setModalOpen(true)}>Add</button>
+          {(role === 'admin' || role === 'gerente' || role === 'setupSr' || role === 'setup') && (
+            <button className="bg-green-600 hover:bg-green-800 text-white font-bold py-2 px-4 rounded" onClick={() => setQueriesModalOpen(true)}>Queries</button>
+          )}
+        </div>
+      </div>
       <BaseTableAdvanced
         schema={dieSerialSchema.filter(f => f.key !== 'id')}
         data={filteredRecords.slice((page - 1) * limit, page * limit)}
         onEdit={rec => { setEditRecord(rec); setModalOpen(true); }}
         onToggleActive={handleToggleActive}
         onAdd={() => { setEditRecord(null); setModalOpen(true); }}
+        onMoveToCirculation={
+          (role === 'admin' || role === 'gerente' || role === 'setupSr' || role === 'setup')
+            ? handleMoveToCirculation
+            : undefined
+        }
       />
+      {/* Move to Circulation Modal */}
+      {moveModalOpen && (
+        <Modal open={moveModalOpen} onClose={() => setMoveModalOpen(false)}>
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Move to Circulation</h2>
+            <p>Are you sure you want to move serial <b>{moveRecord?.serial_number}</b> to Circulation?</p>
+            <div className="flex gap-2 mt-4 justify-end">
+              <button className="bg-blue-700 text-white px-4 py-2 rounded" onClick={confirmMoveToCirculation}>Confirm</button>
+              <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => setMoveModalOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </Modal>
+      )}
+      {/* Queries Modal */}
+      {queriesModalOpen && (
+        <Modal open={queriesModalOpen} onClose={() => setQueriesModalOpen(false)}>
+          <div className="p-4">
+            <h2 className="text-lg font-bold mb-2">Queries</h2>
+            <p>Here you will find inventory and purchase queries (feature coming soon).</p>
+            <div className="flex gap-2 mt-4 justify-end">
+              <button className="bg-gray-300 px-4 py-2 rounded" onClick={() => setQueriesModalOpen(false)}>Close</button>
+            </div>
+          </div>
+        </Modal>
+      )}
       {modalOpen && (
         <DieSerialModal
           mode={editRecord ? 'edit' : 'add'}

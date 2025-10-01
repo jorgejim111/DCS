@@ -1,4 +1,3 @@
-import { updateDieSerial, getAllDieSerials } from '../../services/dieSerialService';
 
 import React, { useEffect, useState } from 'react';
 import useCirculationSerials from '../../hooks/useCirculationSerials';
@@ -68,18 +67,18 @@ const DamageReportModal = ({ onClose }) => {
       .catch(() => setNextId('(auto)'));
     // Cargar productos activos
     getProducts()
-      .then(data => setProducts(Array.isArray(data) ? data.filter(p => p.is_active) : []))
+      .then(data => setProducts(Array.isArray(data) ? data.filter(p => p.is_active) : [])) 
       .catch(() => setProducts([]));
     // Cargar líneas activas
     const token = localStorage.getItem('token');
     getLines(token)
-      .then(data => setLines(Array.isArray(data) ? data.filter(l => l.is_active) : []))
+      .then(data => setLines(Array.isArray(data) ? data.filter(l => l.is_active) : []))    
       .catch(() => setLines([]));
     // Cargar supervisores (position_id 1,2,3)
     workerService.getAll()
       .then(data => {
-        setSupervisors(Array.isArray(data) ? data.filter(w => [1,2,3].includes(w.position_id) && w.is_active) : []);
-        setOperators(Array.isArray(data) ? data.filter(w => [1,2,3,4,5].includes(w.position_id) && w.is_active) : []);
+        setSupervisors(Array.isArray(data) ? data.filter(w => [1,2,3].includes(w.position_id) && w.is_active) : []); 
+        setOperators(Array.isArray(data) ? data.filter(w => [1,2,3,4,5].includes(w.position_id) && w.is_active) : []); 
       })
       .catch(() => {
         setSupervisors([]);
@@ -175,7 +174,7 @@ const DamageReportModal = ({ onClose }) => {
         headers: { Authorization: `Bearer ${token}` }
       });
       const dr = res.data;
-      // Llenar los campos con los datos del DR (ajusta los nombres según tu backend)
+      // Llenar los campos con los datos del DR (ajusta los nombres según tu backend)      
   setSerialInput(dr.serial_number || '');
   setProductInput(dr.product_name || dr.product || '');
   setLineInput(dr.line_name || dr.line || '');
@@ -275,7 +274,7 @@ const DamageReportModal = ({ onClose }) => {
       if (err.response && err.response.data) {
         console.error('Backend error:', err.response.data);
         if (typeof err.response.data === 'string') msg += ' ' + err.response.data;
-        else if (err.response.data.message) msg += ' ' + err.response.data.message;
+        else if (err.response.data.message) msg += ' ' + err.response.data.message;        
         else if (err.response.data.error) msg += ' ' + err.response.data.error;
         else msg += ' ' + JSON.stringify(err.response.data);
       }
@@ -285,7 +284,7 @@ const DamageReportModal = ({ onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-  <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl p-0 relative max-h-screen overflow-y-auto border-2 border-blue-900">
+      <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl p-0 relative max-h-screen overflow-y-auto border-2 border-blue-900">
         {/* Header ISO fiel: 7 columnas x 5 filas grid */}
         <div className="px-0 pt-6 pb-2"> {/* padding top para separación */}
           <div
@@ -315,7 +314,7 @@ const DamageReportModal = ({ onClose }) => {
             </div>
             {/* Originator: columnas 1-2, fila 3 */}
             <div className="col-start-1 col-end-3 row-start-3 row-end-4 border-b border-black flex items-center justify-center bg-white text-xs">
-              Originator: <span className="ml-1 font-semibold">Dir of Technology</span>
+              Originator: <span className="ml-1 font-semibold">Dir of Technology</span>    
             </div>
             {/* Review: columnas 1-2, fila 4 */}
             <div className="col-start-1 col-end-3 row-start-4 row-end-5 border-b border-black flex items-center justify-center bg-white text-xs">
@@ -323,7 +322,7 @@ const DamageReportModal = ({ onClose }) => {
             </div>
             {/* Approval: columnas 1-2, fila 5 */}
             <div className="col-start-1 col-end-3 row-start-5 row-end-6 border-black flex items-center justify-center bg-white text-xs">
-              Approval: <span className="ml-1 font-semibold">Dir of Technology</span>
+              Approval: <span className="ml-1 font-semibold">Dir of Technology</span>      
             </div>
           </div>
         </div>
@@ -348,16 +347,14 @@ const DamageReportModal = ({ onClose }) => {
         )}
         {/* Mensaje de guardado */}
         {saveStatus && (
-          <div className={`px-6 pt-2 pb-2 text-xs font-bold ${saveStatus.includes('success') ? 'text-green-700' : 'text-red-700'}`}>{saveStatus}</div>
-        )}
+          <div className={`px-6 pt-2 pb-2 text-xs font-bold ${saveStatus.includes('success') ? 'text-green-700' : 'text-red-700'}`}>{saveStatus}</div>                                        )}
   {/* Datos principales reacomodados en grid 4x3 */}
   <form className="px-6 py-4" onSubmit={handleSubmit} autoComplete="off">
           {/* ID Damage Report y Search */}
           <div className="grid grid-cols-2 gap-4 mb-2">
             <div className="flex flex-row items-end gap-2">
               <div className="flex-1 flex flex-col">
-                <label className="text-xs font-bold text-blue-900 mb-1">ID Damage Report</label>
-                <input
+                <label className="text-xs font-bold text-blue-900 mb-1">ID Damage Report</label>                                      <input
                   className="border px-2 py-1 rounded"
                   value={searchId}
                   onChange={e => setSearchId(e.target.value)}
@@ -365,19 +362,16 @@ const DamageReportModal = ({ onClose }) => {
                   autoComplete="off"
                 />
               </div>
-              <button type="button" onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded shadow text-sm mb-1">Search</button>
-            </div>
+              <button type="button" onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded shadow text-sm mb-1">Search</button>                   </div>
             <div className="flex flex-col">
               <label className="text-xs font-bold text-blue-900 mb-1">Date</label>
-              <input className="border px-2 py-1 rounded bg-gray-100" value={today} disabled />
-            </div>
+              <input className="border px-2 py-1 rounded bg-gray-100" value={today} disabled />                                   </div>
           </div>
           {/* Grid 4x3 para campos principales */}
           <div className="grid grid-cols-4 gap-4 mb-2">
             {/* Fila 1 */}
             <div className="col-span-2 flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Serial # <span className="text-red-600">*</span></label>
-              <input
+              <label className="text-xs font-bold text-blue-900 mb-1">Serial # <span className="text-red-600">*</span></label>                                      <input
                 className="border px-2 py-1 rounded"
                 placeholder="Select serial..."
                 value={serialInput}
@@ -396,8 +390,7 @@ const DamageReportModal = ({ onClose }) => {
             </div>
             {/* Product Dropdown */}
             <div className="flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Product # <span className="text-red-600">*</span></label>
-              <input
+              <label className="text-xs font-bold text-blue-900 mb-1">Product # <span className="text-red-600">*</span></label>                                     <input
                 className="border px-2 py-1 rounded"
                 placeholder="Select product..."
                 value={productInput}
@@ -412,7 +405,7 @@ const DamageReportModal = ({ onClose }) => {
               />
               <datalist id="product-list">
                 {products
-                  .filter(p => p.name.toLowerCase().includes(productInput.toLowerCase()))
+                  .filter(p => p.name.toLowerCase().includes(productInput.toLowerCase()))  
                   .map(p => (
                     <option key={p.id} value={p.name} />
                   ))}
@@ -420,8 +413,7 @@ const DamageReportModal = ({ onClose }) => {
             </div>
             {/* Line Dropdown */}
             <div className="flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Line # <span className="text-red-600">*</span></label>
-              <input
+              <label className="text-xs font-bold text-blue-900 mb-1">Line # <span className="text-red-600">*</span></label>                                    <input
                 className="border px-2 py-1 rounded"
                 placeholder="Select line..."
                 value={lineInput}
@@ -436,7 +428,7 @@ const DamageReportModal = ({ onClose }) => {
               />
               <datalist id="line-list">
                 {lines
-                  .filter(l => l.name.toLowerCase().includes(lineInput.toLowerCase()))
+                  .filter(l => l.name.toLowerCase().includes(lineInput.toLowerCase()))     
                   .map(l => (
                     <option key={l.id} value={l.name} />
                   ))}
@@ -444,16 +436,11 @@ const DamageReportModal = ({ onClose }) => {
             </div>
             {/* Fila 2 */}
             <div className="flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Inch <span className="text-red-600">*</span></label>
-              <input className="border px-2 py-1 rounded bg-gray-100" value={inch} placeholder="Auto..." disabled />
-            </div>
+              <label className="text-xs font-bold text-blue-900 mb-1">Inch <span className="text-red-600">*</span></label>                                  <input className="border px-2 py-1 rounded bg-gray-100" value={inch} placeholder="Auto..." disabled />                                                                              </div>
             <div className="flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Description <span className="text-red-600">*</span></label>
-              <input className="border px-2 py-1 rounded bg-gray-100" value={description} placeholder="Auto..." disabled />
-            </div>
+              <label className="text-xs font-bold text-blue-900 mb-1">Description <span className="text-red-600">*</span></label>                               <input className="border px-2 py-1 rounded bg-gray-100" value={description} placeholder="Auto..." disabled />                                                                       </div>
             <div className="col-span-2 flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Supervisor / Name <span className="text-red-600">*</span></label>
-              <input
+              <label className="text-xs font-bold text-blue-900 mb-1">Supervisor / Name <span className="text-red-600">*</span></label>                         <input
                 className="border px-2 py-1 rounded"
                 placeholder="Select supervisor..."
                 value={supervisorInput}
@@ -476,12 +463,9 @@ const DamageReportModal = ({ onClose }) => {
             </div>
             {/* Fila 3 */}
             <div className="col-span-2 flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Part <span className="text-red-600">*</span></label>
-              <input className="border px-2 py-1 rounded bg-gray-100" value={part} placeholder="Auto..." disabled />
-            </div>
+              <label className="text-xs font-bold text-blue-900 mb-1">Part <span className="text-red-600">*</span></label>                                  <input className="border px-2 py-1 rounded bg-gray-100" value={part} placeholder="Auto..." disabled />                                                                              </div>
             <div className="col-span-2 flex flex-col">
-              <label className="text-xs font-bold text-blue-900 mb-1">Operator # / Name <span className="text-red-600">*</span></label>
-              <input
+              <label className="text-xs font-bold text-blue-900 mb-1">Operator # / Name <span className="text-red-600">*</span></label>                         <input
                 className="border px-2 py-1 rounded"
                 placeholder="Select operator..."
                 value={operatorInput}
@@ -496,7 +480,7 @@ const DamageReportModal = ({ onClose }) => {
               />
               <datalist id="operator-list">
                 {operators
-                  .filter(o => o.name.toLowerCase().includes(operatorInput.toLowerCase()))
+                  .filter(o => o.name.toLowerCase().includes(operatorInput.toLowerCase())) 
                   .map(o => (
                     <option key={o.id} value={o.name} />
                   ))}
@@ -506,8 +490,7 @@ const DamageReportModal = ({ onClose }) => {
           {/* Campos de descripción y explicación */}
           <div className="px-6 pb-2">
           <div className="mb-2">
-            <label className="text-xs font-bold text-red-600">Description of Damage (if the die was damaged) *</label>
-            <input
+            <label className="text-xs font-bold text-red-600">Description of Damage (if the die was damaged) *</label>                                                                            <input
               className="border px-2 py-1 rounded w-full"
               placeholder="Select description..."
               value={descriptionDrInput}
@@ -530,8 +513,7 @@ const DamageReportModal = ({ onClose }) => {
           </div>
           <div className="mb-2 flex gap-4">
             <div className="flex-1">
-              <label className="text-xs font-bold text-blue-900">Explanation of Damage *</label>
-              <input
+              <label className="text-xs font-bold text-blue-900">Explanation of Damage *</label>                                                                                                    <input
                 className="border px-2 py-1 rounded w-full"
                 placeholder="Select explanation..."
                 value={explanationInput}
@@ -553,7 +535,7 @@ const DamageReportModal = ({ onClose }) => {
               </datalist>
             </div>
             <div className="flex flex-col w-40">
-              <label className="text-xs font-bold text-blue-900">Sample Net? *</label>
+              <label className="text-xs font-bold text-blue-900">Sample Net? *</label>     
               <select
                 className="border px-2 py-1 rounded"
                 value={sampleNet}
@@ -567,8 +549,7 @@ const DamageReportModal = ({ onClose }) => {
             </div>
           </div>
           <div className="mb-2">
-            <label className="text-xs font-bold text-blue-900">Supervisor Explanation *</label>
-            <textarea
+            <label className="text-xs font-bold text-blue-900">Supervisor Explanation *</label>                                                                                                   <textarea
               className="border px-2 py-1 rounded w-full"
               rows={3}
               placeholder="Enter supervisor explanation..."
@@ -580,12 +561,9 @@ const DamageReportModal = ({ onClose }) => {
             <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
               {/* Mostrar Print solo en modo vista, Save solo en modo creación */}
               {isViewMode ? (
-                <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>
-              ) : (
-                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>
-              )}
-              <button type="button" onClick={onClose} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Exit</button>
-            </div>
+                <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>                                          ) : (
+                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>                              )}
+              <button type="button" onClick={onClose} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Exit</button>                              </div>
           </div>
         </form>
       </div>

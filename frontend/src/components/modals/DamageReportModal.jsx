@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import useCirculationSerials from '../../hooks/useCirculationSerials';
 import axios from 'axios';
@@ -282,17 +281,29 @@ const DamageReportModal = ({ onClose }) => {
     }
   };
 
+  // Función para imprimir solo el modal
+  const handlePrint = () => {
+    window.print();
+  };
+
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg w-full max-w-5xl p-0 relative max-h-screen overflow-y-auto border-2 border-blue-900">
+      <div
+        id="damage-report-modal-print"
+        className="bg-white rounded-lg shadow-lg w-full max-w-[816px] p-0 relative max-h-screen overflow-y-auto border-2 border-blue-900"
+        style={{ width: '100%', minWidth: 0, maxWidth: '816px' }}
+      >
         {/* Header ISO fiel: 7 columnas x 5 filas grid */}
-        <div className="px-0 pt-6 pb-2"> {/* padding top para separación */}
+        <div className="px-0 pt-6 pb-2">
           <div
             className="grid border-2 border-black rounded-t-lg overflow-hidden"
             style={{
               gridTemplateColumns: 'repeat(7, 1fr)',
               gridTemplateRows: '32px 32px 28px 28px 28px',
-              minWidth: '900px',
+              width: '100%',
+              minWidth: 0,
+              maxWidth: '816px',
+              margin: '0 auto',
             }}
           >
             {/* Logo: columnas 1-2, filas 1-2 */}
@@ -552,21 +563,89 @@ const DamageReportModal = ({ onClose }) => {
             <label className="text-xs font-bold text-blue-900">Supervisor Explanation *</label>                                                                                                   <textarea
               className="border px-2 py-1 rounded w-full"
               rows={3}
+              maxLength={250}
+              style={{ resize: 'vertical' }}
               placeholder="Enter supervisor explanation..."
               value={supervisorExplanation}
               onChange={e => setSupervisorExplanation(e.target.value)}
             />
           </div>
             {/* Botones */}
-            <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50">
+            <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50 print:hidden">
               {/* Mostrar Print solo en modo vista, Save solo en modo creación */}
               {isViewMode ? (
-                <button type="button" className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>                                          ) : (
-                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>                              )}
-              <button type="button" onClick={onClose} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Exit</button>                              </div>
+                <button type="button" onClick={handlePrint} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>
+              ) : (
+                <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>
+              )}
+              <button type="button" onClick={onClose} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Exit</button>
+            </div>
           </div>
         </form>
       </div>
+      {/* Estilos para impresión solo del modal y formato A4 */}
+      <style>{`
+        @media print {
+          html, body {
+            min-height: 0 !important;
+            height: auto !important;
+            max-height: 100vh !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            box-sizing: border-box !important;
+            width: 100% !important;
+            overflow: hidden !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+          }
+          #damage-report-modal-print {
+            margin: 0 auto !important;
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            break-inside: avoid !important;
+            overflow: hidden !important;
+            box-shadow: none !important;
+            padding-top: 0 !important;
+            border: 2px solid #000 !important;
+          }
+          #damage-report-modal-print * {
+            page-break-after: avoid !important;
+            break-after: avoid !important;
+            break-inside: avoid !important;
+          }
+          #damage-report-modal-print .grid {
+            min-width: 0 !important;
+            max-width: 180mm !important;
+            width: 100% !important;
+          }
+          #damage-report-modal-print .text-2xl {
+            font-size: 1.2rem !important;
+          }
+          #damage-report-modal-print .text-base {
+            font-size: 0.9rem !important;
+          }
+          #damage-report-modal-print .text-xs {
+            font-size: 0.7rem !important;
+          }
+          #damage-report-modal-print .p-0, #damage-report-modal-print .px-0, #damage-report-modal-print .py-0 {
+            padding: 0 !important;
+          }
+          #damage-report-modal-print textarea {
+            height: 2.5em !important;
+            min-height: 2.5em !important;
+            max-height: 2.5em !important;
+            overflow: hidden !important;
+            font-size: 0.8rem !important;
+          }
+          .print\\:hidden, .print\\:hidden * {
+            display: none !important;
+          }
+          @page {
+            size: Letter portrait;
+            margin: 10mm;
+          }
+        }
+      `}</style>
     </div>
   );
 };

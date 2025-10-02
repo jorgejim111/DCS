@@ -38,7 +38,15 @@ Todas las vistas de catálogos siguen el patrón para coherencia visual y funcio
 	- Autocompletado de Inch, Part y Description al seleccionar Serial.
 	- Botón "Save Damage Report" con idioma consistente.
 	- Botón Print solo visible al consultar un DR existente (pendiente de lógica final).
-	- UX mejorada para evitar errores de captura y asegurar trazabilidad.
+	- **Impresión profesional:**
+		- Modal ajustado a tamaño Letter (816px/190mm) para impresión perfecta en una sola hoja.
+		- Eliminados saltos de página y escalado, impresión limpia y sin segunda hoja vacía.
+		- Borde negro y sin sombras en impresión.
+		- Textarea de explicación limitado a 250 caracteres y 2 filas en impresión.
+		- Corrección de paddings, márgenes y fuentes para máxima legibilidad y aprovechamiento del espacio.
+	- **Solución de bugs:**
+		- Restaurado el modal original tras pérdida de funcionalidad.
+		- Eliminados logs de depuración y artefactos visuales.
 - Documentación actualizada y código listo para siguiente ciclo.
 npm 
 ¡Sesión finalizada! Todos los cambios están documentados y el sistema está listo para continuar.
@@ -204,6 +212,15 @@ Este componente asegura coherencia visual y funcional en todas las vistas admini
 - Todos los catálogos muestran registros activos e inactivos, permitiendo gestión completa desde el panel.
 - Mejoras visuales y de usabilidad en modales y tablas.
 - Documentación y estructura actualizada para facilitar mantenimiento y escalabilidad.
+
+---
+
+# Restricciones de acceso a inventarios
+
+- El botón "Inventory" abre un modal de selección con las siguientes opciones:
+  - **Circulation**: visible para todos los roles (incluyendo producción).
+  - **Open DR Inventory** y **New**: solo visibles para los roles setup, setupSr, gerente y admin. El rol producción/production no puede ver ni acceder a estos inventarios.
+- Esta lógica está implementada en `InventorySelectModal.jsx` y se respeta en todo el flujo de navegación.
 
 ---
 

@@ -50,7 +50,7 @@ module.exports = {
   async getAll(req, res) {
     try {
       // Check for serial_number filter
-      const { serial_number, page, limit, orderBy, orderDir, statusFilter } = req.query;
+  const { serial_number, page, limit, orderBy, orderDir, statusFilter, status } = req.query;
       if (serial_number) {
         const die = await DieSerial.findBySerialNumber(serial_number);
         if (!die) {
@@ -59,7 +59,7 @@ module.exports = {
         return res.json(die);
       }
       // Otherwise, return all (with optional filters)
-      const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir, statusFilter });
+  const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir, statusFilter, status });
       res.json(serials);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching die serials', details: error.message });

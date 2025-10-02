@@ -70,7 +70,11 @@ class DieSerial {
       }
       let whereClause = '';
       let whereParams = [];
-      if (args.statusFilter) {
+      if (args.status) {
+        console.log('[DieSerial.findAll] status param:', args.status);
+        whereClause = 'WHERE die_serial.status_id = ?';
+        whereParams = [args.status];
+      } else if (args.statusFilter) {
         if (args.statusFilter === 'circulation') {
           whereClause = 'WHERE status_catalog.name IN (?, ?)';
           whereParams = ['Circulation', 'Open DR'];

@@ -7,6 +7,8 @@ import { getLines } from '../../services/lineService';
 import workerService from '../../services/workerService';
 import { getDescriptionDrs } from '../../services/descriptionDrService';
 import { getExplanations } from '../../services/explanationService';
+import DamageReportLabel from '../print/DamageReportLabel'; // Asegúrate de que la ruta sea correcta
+import { updateDieSerial } from '../../services/dieSerialService';
 
 const DamageReportModal = ({ onClose }) => {
   // Modo vista: true si se está consultando un DR existente
@@ -51,6 +53,10 @@ const DamageReportModal = ({ onClose }) => {
   const [sampleNet, setSampleNet] = useState('');
   // Supervisor Explanation
   const [supervisorExplanation, setSupervisorExplanation] = useState('');
+  // Modal de impresión de label
+  const [showLabelModal, setShowLabelModal] = useState(false);
+  // Estado para controlar cierre pendiente del modal principal
+  const [pendingClose, setPendingClose] = useState(false);
 
 
   // Obtener el siguiente ID Damage Report al abrir el modal
@@ -264,10 +270,9 @@ const DamageReportModal = ({ onClose }) => {
 
       setSaveStatus('Damage Report saved successfully!');
       setIsViewMode(true); // Opcional: pasar a modo vista tras guardar
-      // Cerrar el modal tras guardar exitosamente
-      setTimeout(() => {
-        if (typeof onClose === 'function') onClose();
-      }, 500); // Da tiempo a mostrar el mensaje de éxito brevemente
+      // Mostrar modal del label y NO cerrar el modal principal aún
+      setShowLabelModal(true);
+      setPendingClose(true); // Marcar que debe cerrarse después de imprimir
     } catch (err) {
       let msg = 'Error saving Damage Report.';
       if (err.response && err.response.data) {
@@ -281,9 +286,18 @@ const DamageReportModal = ({ onClose }) => {
     }
   };
 
-  // Función para imprimir solo el modal
-  const handlePrint = () => {
-    window.print();
+  // Función para mostrar el modal del label en vez de imprimir directo
+  const handleShowLabelModal = () => {
+    setShowLabelModal(true);
+  };
+
+  // Cuando se cierra el modal del label, si pendingClose, cerrar también el modal principal
+  const handleCloseLabelModal = () => {
+    setShowLabelModal(false);
+    if (pendingClose) {
+      setPendingClose(false);
+      onClose();
+    }
   };
 
   return (
@@ -574,7 +588,7 @@ const DamageReportModal = ({ onClose }) => {
             <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50 print:hidden">
               {/* Mostrar Print solo en modo vista, Save solo en modo creación */}
               {isViewMode ? (
-                <button type="button" onClick={handlePrint} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>
+                <button type="button" onClick={handleShowLabelModal} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>
               ) : (
                 <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>
               )}
@@ -583,7 +597,36 @@ const DamageReportModal = ({ onClose }) => {
           </div>
         </form>
       </div>
-      {/* Estilos para impresión solo del modal y formato A4 */}
+      {/* Modal de impresión de label */}
+      {showLabelModal && (
+    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black bg-opacity-60">
+      <div className="w-full flex justify-between px-8 pt-6 print:hidden" style={{ maxWidth: '4in' }}>
+        <button
+          onClick={handleCloseLabelModal}
+          className="bg-red-600 text-white rounded px-2 py-1 text-xs"
+        >Close</button>
+        <button
+          onClick={() => window.print()}
+          className="bg-blue-700 text-white rounded px-2 py-1 text-xs"
+        >Print Label</button>
+      </div>
+      <div className="bg-white rounded-lg shadow-lg p-4 relative flex items-center justify-center mt-2" style={{ width: '4in', height: '6in' }}>
+        <div id="label-print-area" style={{ width: '6in', height: '4in', transform: 'rotate(-90deg)', transformOrigin: 'center', position: 'absolute', left: '50%', top: '50%', marginLeft: '-3in', marginTop: '-2in' }}>
+          <DamageReportLabel
+            id={searchId || nextId}
+            date={today}
+            serial={serialInput}
+            product={productInput}
+            line={lineInput}
+            supervisor={supervisorInput}
+            operator={operatorInput}
+            descriptionDr={descriptionDrInput}
+            explanation={explanationInput}
+            sampleNet={sampleNet}
+            supervisorExplanation={supervisorExplanation}
+          />
+        </div>
+      </div>
       <style>{`
         @media print {
           html, body {
@@ -595,57 +638,35 @@ const DamageReportModal = ({ onClose }) => {
             box-sizing: border-box !important;
             width: 100% !important;
             overflow: hidden !important;
-            page-break-after: avoid !important;
-            break-after: avoid !important;
           }
-          #damage-report-modal-print {
-            margin: 0 auto !important;
-            page-break-after: avoid !important;
-            break-after: avoid !important;
-            break-inside: avoid !important;
-            overflow: hidden !important;
+          #label-print-area, #label-print-area * {
+            visibility: visible !important;
+          }
+          #label-print-area {
+            width: 6in !important;
+            height: 4in !important;
+            
+            transform-origin: center !important;
+            position: absolute !important;
+            left: 50% !important;
+            top: 50% !important;
+            margin-left: -3in !important;
+            margin-top: -2in !important;
+            background: white !important;
+            border: none !important;
             box-shadow: none !important;
-            padding-top: 0 !important;
-            border: 2px solid #000 !important;
-          }
-          #damage-report-modal-print * {
-            page-break-after: avoid !important;
-            break-after: avoid !important;
-            break-inside: avoid !important;
-          }
-          #damage-report-modal-print .grid {
-            min-width: 0 !important;
-            max-width: 180mm !important;
-            width: 100% !important;
-          }
-          #damage-report-modal-print .text-2xl {
-            font-size: 1.2rem !important;
-          }
-          #damage-report-modal-print .text-base {
-            font-size: 0.9rem !important;
-          }
-          #damage-report-modal-print .text-xs {
-            font-size: 0.7rem !important;
-          }
-          #damage-report-modal-print .p-0, #damage-report-modal-print .px-0, #damage-report-modal-print .py-0 {
-            padding: 0 !important;
-          }
-          #damage-report-modal-print textarea {
-            height: 2.5em !important;
-            min-height: 2.5em !important;
-            max-height: 2.5em !important;
             overflow: hidden !important;
-            font-size: 0.8rem !important;
+            display: block !important;
           }
-          .print\\:hidden, .print\\:hidden * {
-            display: none !important;
-          }
+          .print\\:hidden { display: none !important; }
           @page {
-            size: Letter portrait;
-            margin: 10mm;
+            size: 4in 6in portrait;
+            margin: 0;
           }
         }
       `}</style>
+    </div>
+  )}
     </div>
   );
 };

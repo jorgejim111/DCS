@@ -68,7 +68,13 @@ frontend/
 - Realiza pruebas unitarias e integración para componentes críticos.
 - Actualiza la documentación y los servicios al modificar la API.
 
-## 5. Ejemplo de servicio con Axios
+## 5. Acceso desde red local (LAN)
+
+- El frontend (Vite) está configurado para escuchar en 0.0.0.0, lo que permite acceso desde otras computadoras en la misma red.
+- Usa la IP local del servidor para acceder a la app (ejemplo: `http://192.168.2.181:5173`).
+- Si hay firewall, permite el puerto configurado (por defecto 5173).
+
+## 6. Ejemplo de servicio con Axios
 
 ```js
 // src/services/dieService.js

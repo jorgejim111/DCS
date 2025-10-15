@@ -11,57 +11,14 @@ const labelStyle = {
   position: 'relative',
   overflow: 'hidden',
   border: '1px solid #333',
-};
-
-const headerStyle = {
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  height: '0.5in',
-  borderBottom: '1px solid #333',
-  padding: '0 0.15in',
-  boxSizing: 'border-box',
-};
-
-const logoStyle = {
-  height: '0.4in',
-  width: '0.4in',
-  objectFit: 'contain',
-  marginRight: '0.2in',
-};
-
-const titleStyle = {
-  flex: 1,
-  textAlign: 'center',
-  fontWeight: 'bold',
-  fontSize: '0.28in',
-  letterSpacing: '0.03in',
-};
-
-const idDateStyle = {
-  minWidth: '1.2in',
-  textAlign: 'right',
-  fontSize: '0.15in',
-  lineHeight: 1.1,
-};
-
-
-const bodyStyle = {
   display: 'grid',
-  gridTemplateColumns: '1.5in 1.5in 1.5in 1.5in',
-  gridTemplateRows: '0.6in 0.6in 0.6in 0.6in',
-  gap: '0.08in',
-  padding: '0.18in',
-  fontSize: '0.17in',
-  boxSizing: 'border-box',
-  height: '3.5in',
+  gridTemplateColumns: '1.2in 1.6in 1.6in 1.6in',
+  gridTemplateRows: '0.6in 0.6in 0.35in 0.35in 0.35in 0.35in 0.35in 0.35in',
+  gap: 0,
 };
 
-const label = (label, value, span = 1) => (
-  <div style={{ gridColumn: `span ${span}` }}>
-    <div style={{ fontWeight: 'bold', marginBottom: '0.04in' }}>{label}</div>
-    <div style={{ wordBreak: 'break-word' }}>{value}</div>
-  </div>
+const cell = (children, style = {}) => (
+  <div style={{ padding: '0.04in 0.06in', ...style }}>{children}</div>
 );
 
 const DamageReportLabel = ({
@@ -79,27 +36,38 @@ const DamageReportLabel = ({
   supervisorExplanation = '',
 }) => (
   <div style={labelStyle}>
-    {/* Header */}
-    <div style={headerStyle}>
-      <img src={logo} alt="Logo" style={logoStyle} />
-      <div style={titleStyle}>Damage Report</div>
-      <div style={idDateStyle}>
-        <div>ID: <b>{id}</b></div>
-        <div>{date}</div>
-      </div>
-    </div>
-    {/* Body */}
-    <div style={bodyStyle}>
-      {label('Serial #', serial)}
-      {label('Line #', line)}
-      {label('Product #', product)}
-      {label('Supervisor', supervisor)}
-      {label('Operator', operator)}
-      {label('Description of Damage', descriptionDr, 2)}
-      {label('Explanation', explanation, 2)}
-      {label('Sample Net', sampleNet)}
-      {label('Supervisor Explanation', supervisorExplanation, 4)}
-    </div>
+    {/* Línea 1 */}
+    {cell(<img src={logo} alt="Logo" style={{ height: '0.95in', width: '0.95in', objectFit: 'contain' }} />, { gridColumn: '1/2', gridRow: '1/3', borderRight: '1px solid #333', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold', fontSize: '0.32in', letterSpacing: '0.02in' }}>Damage Report</span>, { gridColumn: '2/4', gridRow: '1/3', borderRight: '1px solid #333', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold', fontSize: '0.18in' }}>IDDR</span>, { gridColumn: '4/5', gridRow: '1/2', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center' })}
+    {/* Línea 2, columna 4: ID del DR */}
+    {cell(<span style={{ fontSize: '0.18in' }}>{id}</span>, { gridColumn: '4/5', gridRow: '2/3', borderBottom: '1px solid #333', display: 'flex', alignItems: 'center', justifyContent: 'center' })}
+    {/* Línea 3: encabezados Serial, Product, Line, Date */}
+    {cell(<span style={{ fontWeight: 'bold' }}>Serial#</span>, { gridColumn: '1/2', gridRow: '3/4', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold' }}>Product</span>, { gridColumn: '2/3', gridRow: '3/4', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold' }}>Line</span>, { gridColumn: '3/4', gridRow: '3/4', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold' }}>Date</span>, { gridColumn: '4/5', gridRow: '3/4', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {/* Línea 4: datos Serial, Product, Line, Date */}
+    {cell(serial, { gridColumn: '1/2', gridRow: '4/5', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(product, { gridColumn: '2/3', gridRow: '4/5', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(line, { gridColumn: '3/4', gridRow: '4/5', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(date, { gridColumn: '4/5', gridRow: '4/5', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {/* Línea 5: encabezados Description, Supervisor, Operator, Sample */}
+    {cell(<span style={{ fontWeight: 'bold' }}>Description</span>, { gridColumn: '1/2', gridRow: '5/6', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold' }}>Supervisor</span>, { gridColumn: '2/3', gridRow: '5/6', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold' }}>Operator</span>, { gridColumn: '3/4', gridRow: '5/6', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold' }}>Sample</span>, { gridColumn: '4/5', gridRow: '5/6', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {/* Línea 6: datos Description, Supervisor, Operator, Sample */}
+    {cell(descriptionDr, { gridColumn: '1/2', gridRow: '6/7', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(supervisor, { gridColumn: '2/3', gridRow: '6/7', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(operator, { gridColumn: '3/4', gridRow: '6/7', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(sampleNet, { gridColumn: '4/5', gridRow: '6/7', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {/* Línea 7: encabezados Explanation, Note */}
+    {cell(<span style={{ fontWeight: 'bold' }}>Explanation</span>, { gridColumn: '1/2', gridRow: '7/8', borderRight: '1px solid #333', borderBottom: '1px solid #333', textAlign: 'center' })}
+    {cell(<span style={{ fontWeight: 'bold' }}>Note</span>, { gridColumn: '2/5', gridRow: '7/8', borderBottom: '1px solid #333', textAlign: 'left' })}
+    {/* Línea 8: datos Explanation, Note */}
+    {cell(explanation, { gridColumn: '1/2', gridRow: '8/9', borderRight: '1px solid #333', textAlign: 'center' })}
+    {cell(supervisorExplanation, { gridColumn: '2/5', gridRow: '8/9', textAlign: 'left' })}
   </div>
 );
 

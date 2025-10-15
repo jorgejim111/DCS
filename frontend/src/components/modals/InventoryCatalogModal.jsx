@@ -1,4 +1,6 @@
 import React, { useEffect, useState } from 'react';
+import useCirculationSerials from '../../hooks/useCirculationSerials';
+import useNewSerials from '../../hooks/useNewSerials';
 
 const TITLES = {
   circulation: 'Dies in Circulation',
@@ -8,9 +10,13 @@ const TITLES = {
 
 function InventoryCatalogModal({
   type = 'circulation',
-  data = [],
   onClose,
 }) {
+  // Cargar datos solo cuando el modal está abierto y según el tipo
+  const { data: circulationSerials, loading: loadingCirculation } = useCirculationSerials();
+  const { data: newSerials, loading: loadingNew } = useNewSerials();
+  const data = type === 'circulation' ? circulationSerials : newSerials;
+
   // Bloquear scroll del fondo cuando el modal está abierto
   useEffect(() => {
     const original = document.body.style.overflow;

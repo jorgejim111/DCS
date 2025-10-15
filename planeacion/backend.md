@@ -78,6 +78,12 @@ backend/
 - Revisa y refactoriza el código periódicamente para mantener calidad y seguridad.
 - **Conexión a base de datos:**
 	- Usa siempre la función `getConnection()` desde `db/connection.js` para obtener la instancia de conexión MySQL.
+
+## 5. Acceso desde red local (LAN)
+
+- El backend está configurado para escuchar en 0.0.0.0, lo que permite acceso desde otras computadoras en la misma red.
+- Usa la IP local del servidor para acceder a la API (ejemplo: `http://192.168.2.181:3000`).
+- Si hay firewall, permite el puerto configurado (por defecto 3000).
 	- Ejemplo de importación:
 		```js
 		const getConnection = require('../db/connection');

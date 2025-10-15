@@ -1,3 +1,70 @@
+# Arranque automático de servicios (Windows)
+
+## Backend (Node.js)
+- Usar PM2 para gestionar el backend.
+- Guardar el estado con `pm2 save`.
+- Crear un batch `pm2-resurrect-backend.bat` y poner un acceso directo en la carpeta de inicio para restaurar procesos tras reinicio.
+
+## Frontend (Vite/React)
+- Usar un batch (`start-frontend.bat` o `pm2-frontend.bat`) y poner un acceso directo en la carpeta de inicio para que el frontend arranque automáticamente.
+- PM2 no es necesario para el frontend en Windows, solo el batch en inicio.
+
+## Base de datos (MySQL)
+- MySQL se instala como servicio de Windows (ejemplo: `MySQL80`).
+- El tipo de inicio debe ser "Automático" y el estado "Running".
+- Se gestiona desde `services.msc`.
+- Así, la base de datos siempre estará disponible tras reiniciar la PC.
+
+---
+
+**Resumen:**
+- Todos los servicios (backend, frontend, base de datos) están configurados para iniciar automáticamente al prender la computadora.
+- El backend y la base de datos funcionan en segundo plano.
+- El frontend se abre en una ventana separada y es accesible en la red local.
+
+# Arranque automático de backend y frontend (Windows)
+
+## Backend (Node.js)
+1. Inicia el backend con PM2:
+	```powershell
+	pm2 start backend/index.js --name backend
+	pm2 save
+	```
+2. Crea el archivo `pm2-resurrect-backend.bat` con:
+	```bat
+	@echo off
+	pm2 resurrect
+	```
+3. Crea un acceso directo de este batch y colócalo en:
+	`C:\Users\Production2\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup`
+	Así, el backend se restaurará automáticamente al iniciar sesión.
+
+## Frontend (Vite/React)
+1. Asegúrate de tener el script en `package.json`:
+	```json
+	"dev:lan": "vite --server.host=0.0.0.0 --server.port=5173"
+	```
+2. Crea el archivo `start-frontend.bat` en `/frontend` con:
+	```bat
+	@echo off
+	npm run dev:lan
+	```
+	O usa `pm2-frontend.bat` para abrir en ventana separada:
+	```bat
+	@echo off
+	start "" npm run dev:lan
+	```
+3. Crea un acceso directo de este batch y colócalo en:
+	`C:\Users\Production2\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup`
+	Así, el frontend se iniciará automáticamente al iniciar sesión.
+
+---
+
+**Notas:**
+- Puedes verificar los procesos de PM2 con `pm2 list`.
+- Si necesitas cambiar el puerto, edita el script en `package.json`.
+- Si tienes problemas con permisos, ejecuta los batch como administrador.
+
 # Catálogos: patrón de diseño y avances finales
 
 Todas las vistas de catálogos siguen el patrón para coherencia visual y funcional:

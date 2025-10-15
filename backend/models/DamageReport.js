@@ -132,6 +132,24 @@ class DamageReport {
       });
     });
   }
+
+  // Buscar el primer damage_report por die_serial_id (id numérico)
+  static async findFirstBySerial(die_serial_id) {
+    const db = getConnection();
+    const sql = `
+      SELECT dr.* FROM damage_report dr
+      WHERE dr.die_serial_id = ?
+      ORDER BY dr.id ASC
+      LIMIT 1
+    `;
+    return new Promise((resolve, reject) => {
+      db.query(sql, [die_serial_id], (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results[0]);
+      });
+    });
+  }
 }
 
 module.exports = DamageReport;

@@ -1,9 +1,11 @@
 import React, { useEffect } from 'react';
+import useOpenDRSerials from '../../hooks/useOpenDRSerials';
 
 const TITLE = 'Open Damage Reports Inventory';
 
+function InventoryOpenDRModal({ onClose }) {
+  const { data, loading } = useOpenDRSerials();
 
-function InventoryOpenDRModal({ data = [], onClose }) {
   useEffect(() => {
     const original = document.body.style.overflow;
     document.body.style.overflow = 'hidden';

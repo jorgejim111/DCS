@@ -29,17 +29,20 @@ Esta guía explica cómo instalar, configurar y publicar el sistema en un servid
 	JWT_SECRET=tu_clave_secreta
 	PORT=3000
 	```
+
 4. Ejecuta migraciones y seeds si es necesario.
-5. Inicia el backend:
+5. Inicia el backend escuchando en todas las interfaces (LAN):
 	```bash
 	npm run start
 	# o
 	node src/index.js
 	```
+> El backend ahora escucha en 0.0.0.0, así que puedes acceder desde otras computadoras usando la IP local de este equipo (ejemplo: http://192.168.2.181:3000)
+
 6. (Opcional) Usa PM2 para mantener el proceso activo:
 	```bash
 	npm install -g pm2
-	pm2 start src/index.js
+	pm2 start src/index.js -- --host 0.0.0.0
 	pm2 save
 	pm2 startup
 	```
@@ -53,19 +56,38 @@ Esta guía explica cómo instalar, configurar y publicar el sistema en un servid
 	```bash
 	npm install
 	```
+
 3. Configura variables de entorno en `.env`:
 	```env
-	VITE_API_URL=http://localhost:3000/api
+	VITE_API_URL=http://[TU_IP_LOCAL]:3000/api
 	```
-4. Compila el frontend:
+4. Para desarrollo, inicia el frontend escuchando en todas las interfaces (LAN):
+	```bash
+	npm run dev -- --host
+	```
+> El frontend ahora escucha en 0.0.0.0, así que puedes acceder desde otras computadoras usando la IP local de este equipo (ejemplo: http://192.168.2.181:5173)
+
+5. Para producción, compila el frontend:
 	```bash
 	npm run build
 	```
-5. Sirve los archivos estáticos (puedes usar [serve](https://www.npmjs.com/package/serve), Nginx, Apache, etc.):
+6. Sirve los archivos estáticos (puedes usar [serve](https://www.npmjs.com/package/serve), Nginx, Apache, etc.):
 	```bash
 	npm install -g serve
 	serve -s dist
 	```
+
+---
+
+## 5. Pruebas en red local (LAN)
+
+1. Averigua la IP local del servidor (ejecuta `ipconfig` en Windows).
+2. Asegúrate de que el backend y frontend estén escuchando en 0.0.0.0.
+3. Desde otra computadora en la misma red, abre el navegador y accede a:
+	- Frontend: `http://[IP_DEL_SERVIDOR]:5173`
+	- Backend/API: `http://[IP_DEL_SERVIDOR]:3000`
+4. Si hay firewall, permite los puertos necesarios.
+5. Prueba con diferentes roles y usuarios para validar el sistema.
 
 ---
 

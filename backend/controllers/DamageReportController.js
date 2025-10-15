@@ -90,4 +90,17 @@ module.exports = {
       res.status(400).json({ error: 'Validation or update error', details: error.message });
     }
   },
+  // GET /api/damage-report/by-serial/:serial
+  async getBySerial(req, res) {
+    try {
+      const { serial } = req.params;
+      const report = await DamageReport.findFirstBySerial(serial);
+      if (!report) {
+        return res.status(404).json({ error: 'Damage report not found for this serial' });
+      }
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching damage report by serial', details: error.message });
+    }
+  },
 };

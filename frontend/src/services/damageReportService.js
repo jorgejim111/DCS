@@ -1,4 +1,3 @@
-
 import axios from "axios";
 
 function getAuthConfig() {
@@ -31,6 +30,15 @@ export const getSerialDetailsForReport = (id) => {
 export const createDamageReport = async (data) => {
   const config = getAuthConfig();
   const res = await axios.post(API_URL, data, config);
+  return res.data;
+};
+
+// Buscar el primer damage report por serial
+export const getDamageReportBySerial = async (serial) => {
+  const token = localStorage.getItem('token');
+  const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+  // Ajusta la URL según tu backend
+  const res = await axios.get(`/api/damage-report/by-serial/${serial}`, config);
   return res.data;
 };
 

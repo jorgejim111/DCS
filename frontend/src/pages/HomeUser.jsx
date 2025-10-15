@@ -1,9 +1,7 @@
 import React, { useState } from 'react';
 import InventoryCatalogModal from '../components/modals/InventoryCatalogModal';
 import InventoryOpenDRModal from '../components/modals/InventoryOpenDRModal';
-import useCirculationSerials from '../hooks/useCirculationSerials';
-import useOpenDRSerials from '../hooks/useOpenDRSerials';
-import useNewSerials from '../hooks/useNewSerials';
+// import hooks solo cuando se usen en los modales
 import { HiDocumentSearch } from 'react-icons/hi';
 import { MdOutlineInventory } from 'react-icons/md';
 import InventorySelectModal from '../components/modals/InventorySelectModal';
@@ -29,9 +27,7 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
     // Aquí irá la lógica para cada query
     // Por ahora solo cerrar el modal
   };
-  const { data: circulationSerials, loading: loadingCirculation } = useCirculationSerials();
-  const { data: openDRSerials, loading: loadingOpenDR } = useOpenDRSerials();
-  const { data: newSerials, loading: loadingNew } = useNewSerials();
+
 
   const handleInventoryClick = () => setInventoryModalOpen(true);
   const handleInventoryClose = () => setInventoryModalOpen(false);
@@ -119,13 +115,11 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
       {catalogModalOpen && (catalogType === 'circulation' || catalogType === 'new') && (
         <InventoryCatalogModal
           type={catalogType}
-          data={catalogType === 'circulation' ? circulationSerials : newSerials}
           onClose={handleCatalogClose}
         />
       )}
       {openDRModalOpen && (
         <InventoryOpenDRModal
-          data={openDRSerials}
           onClose={handleOpenDRClose}
         />
       )}

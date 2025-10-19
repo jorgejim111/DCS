@@ -16,7 +16,18 @@ const DamageReportModal = ({ onClose }) => {
   const [isViewMode, setIsViewMode] = useState(false);
   // Estados para los campos
 
-  const today = new Date().toISOString().slice(0, 10);
+  // Formatea la fecha a 'DD-MMM-YYYY'
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+  const today = formatDate(new Date().toISOString().slice(0, 10));
   const [nextId, setNextId] = useState('');
   const [searchId, setSearchId] = useState('');
   const [serialId, setSerialId] = useState('');
@@ -395,7 +406,8 @@ const DamageReportModal = ({ onClose }) => {
               <button type="button" onClick={handleSearch} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded shadow text-sm mb-1">Search</button>                   </div>
             <div className="flex flex-col">
               <label className="text-xs font-bold text-blue-900 mb-1">Date</label>
-              <input className="border px-2 py-1 rounded bg-gray-100" value={today} disabled />                                   </div>
+              <input className="border px-2 py-1 rounded bg-gray-100" value={today} disabled />
+            </div>
           </div>
           {/* Grid 4x3 para campos principales */}
           <div className="grid grid-cols-4 gap-4 mb-2">

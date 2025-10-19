@@ -15,6 +15,18 @@ const DamageReportFormView = ({
   supervisorExplanation,
   onClose
 }) => {
+  // Formatea la fecha a 'DD-MMM-YYYY'
+  function formatDate(dateStr) {
+    if (!dateStr) return '';
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const d = new Date(dateStr);
+    if (isNaN(d)) return dateStr;
+    const day = d.getDate().toString().padStart(2, '0');
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    return `${day}-${month}-${year}`;
+  }
+
   return (
     <>
       {/* Modal overlay */}
@@ -117,24 +129,24 @@ const DamageReportFormView = ({
                 <li>The Senior Set up Technician is responsible use the Die_Control_System to request new replacement dies...</li>
               </ul>
             </div>
-            {/* Sección de datos del reporte, layout igual al form */}
+            {/* Sección de datos del reporte, layout igual al form, reordenado */}
             <div className="mb-2 grid grid-cols-4 gap-4 text-sm" style={{ maxWidth: '8.1in', margin: '0 auto' }}>
               <div className="font-bold text-blue-900">ID Damage Report</div>
               <div>{id}</div>
               <div className="font-bold text-blue-900">Date</div>
-              <div>{date}</div>
+              <div>{formatDate(date)}</div>
               <div className="font-bold text-blue-900">Serial #</div>
               <div>{serial}</div>
+              <div className="font-bold text-blue-900">Description</div>
+              <div>{description}</div>
+              <div className="font-bold text-blue-900">Inch</div>
+              <div>{inch}</div>
+              <div className="font-bold text-blue-900">Part</div>
+              <div>{part}</div>
               <div className="font-bold text-blue-900">Product #</div>
               <div>{product}</div>
               <div className="font-bold text-blue-900">Line #</div>
               <div>{line}</div>
-              <div className="font-bold text-blue-900">Inch</div>
-              <div>{inch}</div>
-              <div className="font-bold text-blue-900">Description</div>
-              <div>{description}</div>
-              <div className="font-bold text-blue-900">Part</div>
-              <div>{part}</div>
               <div className="font-bold text-blue-900">Supervisor / Name</div>
               <div>{supervisor}</div>
               <div className="font-bold text-blue-900">Operator / Name</div>
@@ -159,8 +171,8 @@ const DamageReportFormView = ({
             </div>
           </div>
         </div>
-        {/* Botones abajo, fuera del área imprimible */}
-        <div className="flex justify-end items-center gap-2 w-full py-4 px-6 print:hidden" style={{ background: 'transparent', boxShadow: 'none', borderRadius: '0 0 16px 16px', maxWidth: '8.1in', margin: '0 auto' }}>
+        {/* Botones abajo, alineados junto al formulario */}
+        <div className="flex justify-center items-center gap-2 py-4 print:hidden" style={{ background: 'transparent', boxShadow: 'none', borderRadius: '0 0 16px 16px', width: '100%', maxWidth: '8.1in', margin: '0 auto' }}>
           <button
             className="damage-report-btn damage-report-btn-print"
             onClick={() => window.print()}

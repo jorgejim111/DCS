@@ -8,6 +8,7 @@ import workerService from '../../services/workerService';
 import { getDescriptionDrs } from '../../services/descriptionDrService';
 import { getExplanations } from '../../services/explanationService';
 import DamageReportLabel from '../print/DamageReportLabel'; // Asegúrate de que la ruta sea correcta
+import DamageReportFormView from '../print/DamageReportFormView';
 import { updateDieSerial } from '../../services/dieSerialService';
 
 const DamageReportModal = ({ onClose }) => {
@@ -55,6 +56,8 @@ const DamageReportModal = ({ onClose }) => {
   const [supervisorExplanation, setSupervisorExplanation] = useState('');
   // Modal de impresión de label
   const [showLabelModal, setShowLabelModal] = useState(false);
+  // Modal de impresión de formulario completo
+  const [showFormPrintModal, setShowFormPrintModal] = useState(false);
   // Estado para controlar cierre pendiente del modal principal
   const [pendingClose, setPendingClose] = useState(false);
 
@@ -180,20 +183,22 @@ const DamageReportModal = ({ onClose }) => {
       });
       const dr = res.data;
       // Llenar los campos con los datos del DR (ajusta los nombres según tu backend)      
-  setSerialInput(dr.serial_number || '');
-  setProductInput(dr.product_name || dr.product || '');
-  setLineInput(dr.line_name || dr.line || '');
-  setInch(dr.inch || '');
-  setPart(dr.part || '');
-  setDescription(dr.die_description || dr.description || '');
-  setSupervisorInput(dr.supervisor_name || dr.supervisor || '');
-  setOperatorInput(dr.operator_name || dr.operator || '');
-  setDescriptionDrInput(dr.description_dr || '');
-  setExplanationInput(dr.explanation || '');
-  setSampleNet(dr.if_sample === 1 ? 'Yes' : dr.if_sample === 0 ? 'No' : '');
-  setSupervisorExplanation(dr.supervisor_explanation || dr.note || '');
-  setIsViewMode(true);
-  setErrors({});
+      setSerialInput(dr.serial_number || '');
+      setProductInput(dr.product_name || dr.product || '');
+      setLineInput(dr.line_name || dr.line || '');
+      setInch(dr.inch || '');
+      setPart(dr.part || '');
+      setDescription(dr.die_description || dr.description || '');
+      setSupervisorInput(dr.supervisor_name || dr.supervisor || '');
+      setOperatorInput(dr.operator_name || dr.operator || '');
+      setDescriptionDrInput(dr.description_dr || '');
+      setExplanationInput(dr.explanation || '');
+      setSampleNet(dr.if_sample === 1 ? 'Yes' : dr.if_sample === 0 ? 'No' : '');
+      setSupervisorExplanation(dr.supervisor_explanation || dr.note || '');
+      setIsViewMode(true);
+      setErrors({});
+      // Abrir modal de impresión de formulario al buscar
+      setShowFormPrintModal(true);
     } catch (err) {
       setErrors({ search: 'Damage Report not found.' });
       setIsViewMode(false);
@@ -304,8 +309,8 @@ const DamageReportModal = ({ onClose }) => {
     <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
       <div
         id="damage-report-modal-print"
-        className="bg-white rounded-lg shadow-lg w-full max-w-[816px] p-0 relative max-h-screen overflow-y-auto border-2 border-blue-900"
-        style={{ width: '100%', minWidth: 0, maxWidth: '816px' }}
+        className="bg-white w-full p-0 relative max-h-screen overflow-y-auto"
+        style={{ width: '100%', minWidth: 0, maxWidth: '816px', boxShadow: 'none', border: 'none' }}
       >
         {/* Header ISO fiel: 7 columnas x 5 filas grid */}
         <div className="px-0 pt-6 pb-2">
@@ -586,10 +591,8 @@ const DamageReportModal = ({ onClose }) => {
           </div>
             {/* Botones */}
             <div className="flex justify-between items-center px-6 py-4 border-t bg-gray-50 print:hidden">
-              {/* Mostrar Print solo en modo vista, Save solo en modo creación */}
-              {isViewMode ? (
-                <button type="button" onClick={handleShowLabelModal} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-6 rounded shadow-lg text-lg">Print</button>
-              ) : (
+              {/* Mostrar Save solo en modo creación */}
+              {!isViewMode && (
                 <button type="submit" className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Save Damage Report</button>
               )}
               <button type="button" onClick={onClose} className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded shadow-lg text-lg">Exit</button>
@@ -599,74 +602,57 @@ const DamageReportModal = ({ onClose }) => {
       </div>
       {/* Modal de impresión de label */}
       {showLabelModal && (
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black bg-opacity-60">
-      <div className="w-full flex justify-between px-8 pt-6 print:hidden" style={{ maxWidth: '4in' }}>
-        <button
-          onClick={handleCloseLabelModal}
-          className="bg-red-600 text-white rounded px-2 py-1 text-xs"
-        >Close</button>
-        <button
-          onClick={() => window.print()}
-          className="bg-blue-700 text-white rounded px-2 py-1 text-xs"
-        >Print Label</button>
-      </div>
-      <div className="bg-white rounded-lg shadow-lg p-4 relative flex items-center justify-center mt-2" style={{ width: '4in', height: '6in' }}>
-        <div id="label-print-area" style={{ width: '6in', height: '4in', transform: 'rotate(-90deg)', transformOrigin: 'center', position: 'absolute', left: '50%', top: '50%', marginLeft: '-3in', marginTop: '-2in' }}>
-          <DamageReportLabel
-            id={searchId || nextId}
-            date={today}
-            serial={serialInput}
-            product={productInput}
-            line={lineInput}
-            supervisor={supervisorInput}
-            operator={operatorInput}
-            descriptionDr={descriptionDrInput}
-            explanation={explanationInput}
-            sampleNet={sampleNet}
-            supervisorExplanation={supervisorExplanation}
-          />
+        <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-black bg-opacity-60">
+          <div className="w-full flex justify-between px-8 pt-6 print:hidden" style={{ maxWidth: '4in' }}>
+            <button
+              onClick={handleCloseLabelModal}
+              className="bg-red-600 text-white rounded px-2 py-1 text-xs"
+            >Close</button>
+            <button
+              onClick={() => window.print()}
+              className="bg-blue-700 text-white rounded px-2 py-1 text-xs"
+            >Print Label</button>
+          </div>
+          <div className="bg-white rounded-lg shadow-lg p-4 relative flex items-center justify-center mt-2" style={{ width: '4in', height: '6in' }}>
+            <div id="label-print-area" style={{ width: '6in', height: '4in', transform: 'rotate(-90deg)', transformOrigin: 'center', position: 'absolute', left: '50%', top: '50%', marginLeft: '-3in', marginTop: '-2in' }}>
+              <DamageReportLabel
+                id={searchId || nextId}
+                date={today}
+                serial={serialInput}
+                product={productInput}
+                line={lineInput}
+                supervisor={supervisorInput}
+                operator={operatorInput}
+                descriptionDr={descriptionDrInput}
+                explanation={explanationInput}
+                sampleNet={sampleNet}
+                supervisorExplanation={supervisorExplanation}
+              />
+            </div>
+          </div>
         </div>
-      </div>
-      <style>{`
-        @media print {
-          html, body {
-            min-height: 0 !important;
-            height: auto !important;
-            max-height: 100vh !important;
-            margin: 0 !important;
-            padding: 0 !important;
-            box-sizing: border-box !important;
-            width: 100% !important;
-            overflow: hidden !important;
-          }
-          #label-print-area, #label-print-area * {
-            visibility: visible !important;
-          }
-          #label-print-area {
-            width: 6in !important;
-            height: 4in !important;
-            
-            transform-origin: center !important;
-            position: absolute !important;
-            left: 50% !important;
-            top: 50% !important;
-            margin-left: -3in !important;
-            margin-top: -2in !important;
-            background: white !important;
-            border: none !important;
-            box-shadow: none !important;
-            overflow: hidden !important;
-            display: block !important;
-          }
-          .print\\:hidden { display: none !important; }
-          @page {
-            size: 4in 6in portrait;
-            margin: 0;
-          }
-        }
-      `}</style>
-    </div>
-  )}
+      )}
+
+      {/* Modal de impresión de formulario completo (Letter) */}
+      {showFormPrintModal && (
+        <DamageReportFormView
+          id={searchId || nextId}
+          date={today}
+          serial={serialInput}
+          product={productInput}
+          line={lineInput}
+          inch={inch}
+          part={part}
+          description={description}
+          supervisor={supervisorInput}
+          operator={operatorInput}
+          descriptionDr={descriptionDrInput}
+          explanation={explanationInput}
+          sampleNet={sampleNet}
+          supervisorExplanation={supervisorExplanation}
+          onClose={() => setShowFormPrintModal(false)}
+        />
+      )}
     </div>
   );
 };

@@ -23,13 +23,52 @@ const DamageReportFormView = ({
           {/* Área de impresión */}
           <div id="damage-report-form-print" className="bg-white" style={{ width: '80%', maxWidth: '7.5in', margin: '0 auto', boxSizing: 'border-box', padding: '0', overflow: 'visible', position: 'relative', display: 'block' }}>
             {/* Encabezado tipo ISO ajustado a hoja carta */}
-            <div className="mb-4" style={{ width: '100%', maxWidth: '8.5in', margin: '0 auto' }}>
+            {/* Estilos solo para pantalla, no impresión */}
+            <style>{`
+              @media screen {
+                #damage-report-form-print {
+                  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+                  border-radius: 16px;
+                  padding: 1.5rem 2rem;
+                  background: #fff;
+                  margin-top: 2rem;
+                  width: 100%;
+                  max-width: 8.1in;
+                  min-width: 8.1in;
+                  display: block;
+                }
+                .damage-report-btn {
+                  box-shadow: 0 1px 4px rgba(0,0,0,0.10);
+                  border-radius: 8px;
+                  font-size: 1rem;
+                  min-width: 90px;
+                  padding: 0.5rem 1.5rem;
+                  font-weight: 600;
+                  transition: background 0.2s;
+                }
+                .damage-report-btn-print {
+                  background: #2563eb;
+                  color: #fff;
+                }
+                .damage-report-btn-print:hover {
+                  background: #1e40af;
+                }
+                .damage-report-btn-close {
+                  background: #dc2626;
+                  color: #fff;
+                }
+                .damage-report-btn-close:hover {
+                  background: #991b1b;
+                }
+              }
+            `}</style>
+            <div className="mb-4" style={{ width: '100%', maxWidth: '8.1in', margin: '0 auto' }}>
               <div
                 className="grid border-2 border-black rounded-t-lg overflow-hidden"
                 style={{
                   gridTemplateColumns: '1.2fr 1.2fr 1.2fr 1.2fr 1.2fr 1fr 1fr',
                   gridTemplateRows: '32px 32px 28px 28px 28px',
-                  width: '8.1in',
+                  width: '100%',
                   minWidth: 0,
                   maxWidth: '8.1in',
                   margin: '0 auto',
@@ -121,9 +160,19 @@ const DamageReportFormView = ({
           </div>
         </div>
         {/* Botones abajo, fuera del área imprimible */}
-        <div className="flex justify-end items-center gap-2 w-full py-4 px-6 print:hidden" style={{ background: 'white' }}>
-          <button className="px-4 py-2 bg-blue-700 text-white rounded hover:bg-blue-900 font-semibold" onClick={() => window.print()} style={{ minWidth: '90px' }}>Print</button>
-          <button className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 font-semibold" onClick={onClose} style={{ minWidth: '90px' }}>Close</button>
+        <div className="flex justify-end items-center gap-2 w-full py-4 px-6 print:hidden" style={{ background: 'transparent', boxShadow: 'none', borderRadius: '0 0 16px 16px', maxWidth: '8.1in', margin: '0 auto' }}>
+          <button
+            className="damage-report-btn damage-report-btn-print"
+            onClick={() => window.print()}
+          >
+            Print
+          </button>
+          <button
+            className="damage-report-btn damage-report-btn-close"
+            onClick={onClose}
+          >
+            Close
+          </button>
         </div>
       </div>
       {/* CSS de impresión */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { getActiveDieDescriptions } from "../../services/dieSerialService";
+import { getAllDieDescriptions } from "../../services/dieDescriptionService";
 import { addDieSerial } from "../../services/dieSerialService";
 import { createDieSerialHistory } from "../../services/dieSerialHistoryService";
 
@@ -18,9 +18,9 @@ const NewSerialModal = ({ open, onClose }) => {
   useEffect(() => {
     if (open) {
       setLoading(true);
-      getActiveDieDescriptions()
-        .then(data => {
-          // Robust mapping: solo id y die_description, soporta respuesta con campos extra
+      getAllDieDescriptions()
+        .then(res => {
+          const data = res.data;
           const mapped = Array.isArray(data)
             ? data
                 .map(d => ({
@@ -30,7 +30,6 @@ const NewSerialModal = ({ open, onClose }) => {
                 .filter(d => d.die_description)
                 .sort((a, b) => a.die_description.localeCompare(b.die_description))
             : [];
-          console.log('DieDescriptions from DB:', mapped);
           setDieDescriptions(mapped);
         })
         .catch(() => setDieDescriptions([]))
@@ -70,17 +69,31 @@ const NewSerialModal = ({ open, onClose }) => {
       }
       // Crear serial
       const serialRes = await addDieSerial({
-        serial: serial.toUpperCase(),
-        dieDescriptionId: dieDesc.id,
+        serial_number: serial.toUpperCase(),
+        die_description_id: dieDesc.id,
+        status_id: 1,
         inner: parseFloat(inner),
         outer: parseFloat(outer),
         proudness: parseFloat(proudness)
       });
       // Registrar en die_serial_history
+      const dieSerialId = serialRes?.data?.id;
+      if (!dieSerialId) {
+        console.error("ERROR: El backend no devolvió el id del nuevo serial. serialRes=", serialRes);
+        setSaveStatus("Error: El backend no devolvió el id del nuevo serial. No se puede crear historial.");
+        setLoading(false);
+        return;
+      }
+  // Log eliminado: serialRes y dieSerialId
       await createDieSerialHistory({
-        serialId: serialRes.id,
-        action: "created",
-        date: new Date().toISOString()
+        die_serial_id: dieSerialId,
+        status_id: 1,
+        inner_to_grind: parseFloat(inner),
+        outer_to_grind: parseFloat(outer),
+        note: "Brand new die pending production test",
+        proudness: parseFloat(proudness),
+        performed_by: 2 // id de usuario, ajustar si tienes el id dinámico
+        // Los demás campos quedan como null por default
       });
       setSaveStatus("Serial created successfully!");
       handleClose();
@@ -125,7 +138,7 @@ const NewSerialModal = ({ open, onClose }) => {
           <div className="flex flex-col">
             <label className="text-xs font-bold text-blue-900 mb-1">Die Description <span className="text-red-600">*</span></label>
             <input
-              className="border px-2 py-1 rounded"
+              className="border px-2 py-1 rounded w-full"
               placeholder="Select Die Description..."
               value={dieDescriptionInput}
               onChange={e => setDieDescriptionInput(e.target.value)}
@@ -135,7 +148,7 @@ const NewSerialModal = ({ open, onClose }) => {
             />
             <datalist id="die-description-list">
               {dieDescriptions
-                .filter(d => d.die_description && d.die_description.toLowerCase().includes(dieDescriptionInput.toLowerCase()))
+                .sort((a, b) => a.die_description.localeCompare(b.die_description))
                 .map(d => (
                   <option key={d.id} value={d.die_description} />
                 ))}

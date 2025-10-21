@@ -24,6 +24,7 @@ module.exports = {
   async getActive(req, res) {
     try {
       const descriptions = await DieDescription.findActive();
+      console.log('Active die descriptions from DB:', descriptions);
       res.json(descriptions);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching active die descriptions', details: error.message });

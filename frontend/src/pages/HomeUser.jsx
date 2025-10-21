@@ -4,13 +4,25 @@ import InventoryOpenDRModal from '../components/modals/InventoryOpenDRModal';
 // import hooks solo cuando se usen en los modales
 import { HiDocumentSearch } from 'react-icons/hi';
 import { MdOutlineInventory } from 'react-icons/md';
+import { FaHistory, FaSyncAlt } from 'react-icons/fa';
+import { TbSettingsSearch } from 'react-icons/tb';
+import NewSerialModal from '../components/modals/NewSerialModal';
+import { FaPlusSquare } from 'react-icons/fa';
 import InventorySelectModal from '../components/modals/InventorySelectModal';
 import QuerySelectModal from '../components/modals/QuerySelectModal';
 import MoveToCirculationModal from '../components/modals/MoveToCirculationModal';
 import DamageReportModal from '../components/modals/DamageReportModal';
-import DieHistoryModalLauncher from '../components/modals/DieHistoryModalLauncher';
+import DieHistorySelectModal from '../components/modals/DieHistorySelectModal';
+import DieHistoryModal from '../components/modals/DieHistoryModal';
 
 const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
+  const [newSerialModalOpen, setNewSerialModalOpen] = useState(false);
+  const [dieHistoryModalOpen, setDieHistoryModalOpen] = useState(false);
+  const [selectedSerial, setSelectedSerial] = useState("");
+  const handleNewSerialClick = () => setNewSerialModalOpen(true);
+  const handleNewSerialClose = () => setNewSerialModalOpen(false);
+  const handleDieHistoryClick = () => setDieHistoryModalOpen(true);
+  const handleDieHistoryClose = () => setDieHistoryModalOpen(false);
   const [inventoryModalOpen, setInventoryModalOpen] = useState(false);
   const [catalogModalOpen, setCatalogModalOpen] = useState(false);
   const [catalogType, setCatalogType] = useState(null);
@@ -58,9 +70,14 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
       <h1 className="text-2xl font-bold text-[#0C2C65] mb-4">Welcome, {username}!</h1>
       <p className="text-[#264893] mb-6">This is your dashboard. Use the sidebar to access your main actions.</p>
   <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-    <DieHistoryModalLauncher onSerialSelected={serial => {
-      console.log('Selected serial:', serial);
-    }} />
+    <button
+      className="bg-gray-200 hover:bg-gray-300 text-[#264893] rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
+      style={{ minHeight: '170px' }}
+      onClick={handleDieHistoryClick}
+    >
+      <FaHistory className="text-5xl mb-2" />
+      <span className="font-bold text-lg">Die History</span>
+    </button>
     <button
       className="bg-red-600 hover:bg-red-700 text-white rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-red-700 focus:outline-none focus:ring-2 focus:ring-red-400"
       style={{ minHeight: '170px' }}
@@ -79,27 +96,56 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
     </button>
   </div>
   {(role === 'admin' || role === 'gerente' || role === 'setupSr' || role === 'setup') && (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <button
-        className="bg-[#264893] hover:bg-[#0C2C65] text-white rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-[#0C2C65] focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
-        style={{ minHeight: '170px' }}
-        onClick={handleMoveToCircClick}
-      >
-        <span className="font-bold text-lg">Move to Circulation</span>
-      </button>
-  <MoveToCirculationModal
-    open={moveToCircModalOpen}
-    onClose={handleMoveToCircClose}
-  />
-      <button
-        className="bg-gray-200 hover:bg-gray-300 text-[#264893] rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
-        style={{ minHeight: '170px' }}
-        onClick={handleQueryClick}
-      >
-        <span className="font-bold text-lg">Queries</span>
-      </button>
-    </div>
+    <>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-0">
+        <button
+          className="bg-[#264893] hover:bg-[#0C2C65] text-white rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-[#0C2C65] focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
+          style={{ minHeight: '170px' }}
+          onClick={handleMoveToCircClick}
+        >
+          <FaSyncAlt className="text-5xl mb-2" />
+          <span className="font-bold text-lg">Move to Circulation</span>
+        </button>
+        <button
+          className="bg-gray-200 hover:bg-gray-300 text-[#264893] rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
+          style={{ minHeight: '170px' }}
+          onClick={handleQueryClick}
+        >
+          <TbSettingsSearch className="text-5xl mb-2" />
+          <span className="font-bold text-lg">Queries</span>
+        </button>
+      </div>
+      {/* Solo admin, gerente, setupSr: New Serial# en una nueva línea */}
+      {(role === 'admin' || role === 'gerente' || role === 'setupSr') && (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6 mt-6">
+          <button
+            className="bg-gray-200 hover:bg-gray-300 text-[#264893] rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-gray-300 focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
+            style={{ minHeight: '170px' }}
+            onClick={handleNewSerialClick}
+          >
+            <FaPlusSquare className="text-5xl mb-2" />
+            <span className="font-bold text-lg">New Serial#</span>
+          </button>
+        </div>
+      )}
+    </>
   )}
+  {/* Modal funcional para New Serial# */}
+  <NewSerialModal open={newSerialModalOpen} onClose={handleNewSerialClose} />
+  {/* Modal para seleccionar serial y ver historial */}
+  <DieHistorySelectModal
+    isOpen={dieHistoryModalOpen}
+    onClose={handleDieHistoryClose}
+    onSelect={serial => {
+      setSelectedSerial(serial);
+      setDieHistoryModalOpen(false);
+    }}
+  />
+  <DieHistoryModal
+    isOpen={!!selectedSerial}
+    serialNumber={selectedSerial}
+    onClose={() => setSelectedSerial("")}
+  />
   <QuerySelectModal
     open={queryModalOpen}
     onClose={handleQueryClose}

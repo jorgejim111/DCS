@@ -70,7 +70,10 @@ class DieSerial {
       }
       let whereClause = '';
       let whereParams = [];
-      if (args.status) {
+      if (args.is_active) {
+        whereClause = 'WHERE die_serial.is_active = ?';
+        whereParams = [args.is_active];
+      } else if (args.status) {
         console.log('[DieSerial.findAll] status param:', args.status);
         whereClause = 'WHERE die_serial.status_id = ?';
         whereParams = [args.status];

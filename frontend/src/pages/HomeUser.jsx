@@ -8,14 +8,22 @@ import { FaHistory, FaSyncAlt } from 'react-icons/fa';
 import { TbSettingsSearch } from 'react-icons/tb';
 import NewSerialModal from '../components/modals/NewSerialModal';
 import { FaPlusSquare } from 'react-icons/fa';
+import { GiMagnifyingGlass } from 'react-icons/gi';
 import InventorySelectModal from '../components/modals/InventorySelectModal';
 import QuerySelectModal from '../components/modals/QuerySelectModal';
 import MoveToCirculationModal from '../components/modals/MoveToCirculationModal';
 import DamageReportModal from '../components/modals/DamageReportModal';
 import DieHistorySelectModal from '../components/modals/DieHistorySelectModal';
 import DieHistoryModal from '../components/modals/DieHistoryModal';
+import ReviewDamageReportSelectModal from '../components/modals/ReviewDamageReportSelectModal';
+import DamageReportViewModal from '../components/modals/DamageReportViewModal';
 
 const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
+  const [reviewDRModalOpen, setReviewDRModalOpen] = useState(false);
+  const [viewDRId, setViewDRId] = useState(null);
+  const handleReviewDRClick = () => setReviewDRModalOpen(true);
+  const handleReviewDRClose = () => setReviewDRModalOpen(false);
+  const handleViewDRClose = () => setViewDRId(null);
   const [newSerialModalOpen, setNewSerialModalOpen] = useState(false);
   const [dieHistoryModalOpen, setDieHistoryModalOpen] = useState(false);
   const [selectedSerial, setSelectedSerial] = useState("");
@@ -126,8 +134,32 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
             <FaPlusSquare className="text-5xl mb-2" />
             <span className="font-bold text-lg">New Serial#</span>
           </button>
+          {(role === 'admin' || role === 'gerente' || role === 'setupSr') && (
+            <button
+              className="bg-[#264893] hover:bg-[#0C2C65] text-white rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-[#0C2C65] focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
+              style={{ minHeight: '170px' }}
+              onClick={handleReviewDRClick}
+            >
+              <GiMagnifyingGlass className="text-5xl mb-2" />
+              <span className="font-bold text-lg">Review Damage Report</span>
+            </button>
+          )}
         </div>
       )}
+  {/* Modal para seleccionar Damage Report a revisar */}
+  <ReviewDamageReportSelectModal
+    isOpen={reviewDRModalOpen}
+    onClose={handleReviewDRClose}
+    onSelect={drId => {
+      setViewDRId(drId);
+      setReviewDRModalOpen(false);
+    }}
+  />
+  <DamageReportViewModal
+    open={!!viewDRId}
+    onClose={handleViewDRClose}
+    id={viewDRId}
+  />
     </>
   )}
   {/* Modal funcional para New Serial# */}

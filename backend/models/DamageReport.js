@@ -1,6 +1,45 @@
 const getConnection = require('../db/connection');
 
 class DamageReport {
+  // Obtener todos los Damage Reports abiertos (status_id = 4)
+  static async findOpen() {
+    const db = getConnection();
+    const sql = `SELECT id, status_id AS id_status FROM damage_report WHERE status_id = 4 ORDER BY id ASC`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, (err, results) => {
+        console.log('SQL findOpen results:', results, 'error:', err);
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
+
+  // Obtener todos los Damage Reports por status_id
+  static async findByStatus(status_id) {
+    const db = getConnection();
+    const sql = `SELECT id, status_id AS id_status FROM damage_report WHERE status_id = ? ORDER BY id ASC`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, [status_id], (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
+  // Obtener todos los Damage Reports abiertos (status_id = 5)
+  static async findOpen() {
+    const db = getConnection();
+    const sql = `SELECT id, status_id AS id_status FROM damage_report WHERE status_id = 4 ORDER BY id ASC`;
+    return new Promise((resolve, reject) => {
+      db.query(sql, (err, results) => {
+        console.log('SQL findOpen results:', results, 'error:', err);
+        db.end();
+        if (err) return reject(err);
+        resolve(results);
+      });
+    });
+  }
   static async getNextId() {
     const db = getConnection();
     return new Promise((resolve, reject) => {

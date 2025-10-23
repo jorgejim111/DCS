@@ -1,4 +1,23 @@
+// Obtener un Damage Report por ID
+export const getDamageReportById = async (id) => {
+  const config = getAuthConfig();
+  const res = await axios.get(`/api/damage-report/${id}`, config);
+  return res.data;
+};
+// Obtener Damage Reports por status_id
+export const getDamageReportsByStatus = async (status_id) => {
+  const config = getAuthConfig();
+  const res = await axios.get(`/api/damage-report/status/${status_id}`, config);
+  return res.data;
+};
 import axios from "axios";
+// Obtener todos los Damage Reports abiertos (id_status = 5)
+export const getOpenDamageReports = async () => {
+  const config = getAuthConfig();
+  const res = await axios.get("/api/damage-report/open", config);
+  return res.data;
+};
+
 
 function getAuthConfig() {
   const token = localStorage.getItem('token');

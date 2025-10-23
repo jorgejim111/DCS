@@ -1,3 +1,4 @@
+ 
 const DamageReport = require('../models/DamageReport');
 const yup = require('yup');
 
@@ -8,6 +9,25 @@ const damageReportSchema = yup.object().shape({
 });
 
 module.exports = {
+  // GET /api/damage-report/open
+  async getOpen(req, res) {
+    try {
+      const openReports = await DamageReport.findOpen();
+      res.json(openReports);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching open damage reports', details: error.message });
+    }
+  },
+   // GET /api/damage-report/status/:status_id
+  async getByStatus(req, res) {
+    try {
+      const { status_id } = req.params;
+      const reports = await DamageReport.findByStatus(status_id);
+      res.json(reports);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching damage reports by status', details: error.message });
+    }
+  },
   // GET /api/damage-report/active-ids
   async getActiveIds(req, res) {
     try {

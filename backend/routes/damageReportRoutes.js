@@ -5,6 +5,9 @@ const DamageReportController = require('../controllers/DamageReportController');
 const authenticateToken = require('../middleware/authMiddleware');
 const authorizeRoles = require('../middleware/roleMiddleware');
 
+// Obtener los datos crudos (IDs) de un Damage Report
+router.get('/raw/:id', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr', 'setup', 'production'), DamageReportController.getRawById);
+
 // Obtener Damage Reports por status_id
 router.get('/status/:status_id', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr'), DamageReportController.getByStatus);
 

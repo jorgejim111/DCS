@@ -2,6 +2,38 @@
 const DieSerial = require('../models/DieSerial');
 const yup = require('yup');
 
+// Actualizar die_serial a status_id=2 y crear registro en die_serial_history (diagnóstico Good)
+exports.setGoodStatus = async (req, res) => {
+  try {
+    const { damageReportId, note } = req.body;
+    const userId = req.user.id;
+    const DamageReport = require('../models/DamageReport');
+    const DieSerial = require('../models/DieSerial');
+    const DieSerialHistory = require('../models/DieSerialHistory');
+    // Obtener el DR
+    const dr = await DamageReport.findById(damageReportId);
+    if (!dr) return res.status(404).json({ error: 'Damage Report not found' });
+    // Actualizar die_serial
+    await DieSerial.updateStatus(dr.die_serial_id, 2);
+    // Insertar en die_serial_history
+    await DieSerialHistory.create({
+      die_serial_id: dr.die_serial_id,
+      status_id: 2,
+      date: new Date(),
+      note,
+      damage_report_id: damageReportId,
+      observed_damage_id: dr.description_dr_id,
+      performed_by: userId,
+      product_id: dr.product_id,
+      line_id: dr.line_id
+    });
+    res.json({ success: true });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+
 const dieSerialSchema = yup.object().shape({
   serial_number: yup.string().required('Serial number is required'),
   die_description_id: yup.number().required('Die description ID is required'),

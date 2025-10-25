@@ -1,6 +1,9 @@
- 
 const DamageReport = require('../models/DamageReport');
 const yup = require('yup');
+
+
+ 
+
 
 const damageReportSchema = yup.object().shape({
   // Validar que description_dr_id es requerido y es número
@@ -9,6 +12,20 @@ const damageReportSchema = yup.object().shape({
 });
 
 module.exports = {
+  // GET /api/damage-report/raw/:id
+  async getRawById(req, res) {
+    try {
+      const { id } = req.params;
+      const report = await DamageReport.findRawById(id);
+      if (!report) {
+        return res.status(404).json({ error: 'Damage report not found' });
+      }
+      console.log('DR RAW recibido:', report);
+      res.json(report);
+    } catch (error) {
+      res.status(500).json({ error: 'Error fetching raw damage report', details: error.message });
+    }
+  },
   // GET /api/damage-report/open
   async getOpen(req, res) {
     try {

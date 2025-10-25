@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-
-import { getDamageReportById } from '../../services/damageReportService';
+import axios from 'axios';
+import { updateDieSerial } from '../../services/dieSerialService';
+import { createDieSerialHistory } from '../../services/dieSerialHistoryService';
 
 function formatDate(dateStr) {
   if (!dateStr) return '';
@@ -13,15 +14,218 @@ function formatDate(dateStr) {
 const DamageReportViewModal = ({ open, onClose, id }) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [showGoodModal, setShowGoodModal] = useState(false);
+  const [goodNote, setGoodNote] = useState('');
+  const [showFixModal, setShowFixModal] = useState(false);
+  const [fixNote, setFixNote] = useState('');
+  const [innerToGrind, setInnerToGrind] = useState('');
+  const [outerToGrind, setOuterToGrind] = useState('');
+  const [showScrapModal, setShowScrapModal] = useState(false);
+  const [scrapNote, setScrapNote] = useState('');
+  const handleScrapSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      // 1. Actualizar el Damage Report: status_id a 6 (Closed) y veredicto 'Scrap'
+      const drUpdate = {
+        die_serial_id: data.die_serial_id ?? null,
+        line_id: data.line_id ?? null,
+        product_id: data.product_id ?? null,
+        operator_id: data.operator_id ?? null,
+        supervisor_id: data.supervisor_id ?? null,
+        description_dr_id: data.description_dr_id ?? null,
+        explanation_id: data.explanation_id ?? null,
+        if_sample: data.if_sample ?? 0,
+        note: data.note ?? '',
+        status_id: 6,
+        verdict: 'Scrap'
+      };
+      await axios.put(`/api/damage-report/${id}`, drUpdate, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // 2. Actualizar el die_serial a status 3 (Scrap)
+      if (data && data.die_serial_id) {
+        const res = await axios.get(`/api/die-serial/${data.die_serial_id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const serial = res.data;
+        await updateDieSerial(data.die_serial_id, {
+          serial_number: serial.serial_number,
+          die_description_id: serial.die_description_id,
+          status_id: 3,
+          inner: serial.inner == null ? 0 : serial.inner,
+          outer: serial.outer == null ? 0 : serial.outer,
+          proudness: serial.proudness == null ? 0 : serial.proudness
+        });
+      }
+
+      // 3. Registrar historial en die_serial_history con status 3 y nota
+      if (data && data.die_serial_id) {
+        await createDieSerialHistory({
+          die_serial_id: data.die_serial_id,
+          status_id: 3, // Scrap
+          note: scrapNote,
+          damage_report_id: id,
+          observed_damage_id: data.description_dr_id,
+          performed_by: data.operator_id,
+          product_id: data.product_id,
+          line_id: data.line_id
+        });
+      }
+
+      setShowScrapModal(false);
+      setScrapNote('');
+      alert('Die status updated to Scrap and history saved.');
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.error || err.message));
+    }
+    if (onClose) onClose();
+  };
+  const handleFixSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      // 1. Actualizar el Damage Report: status_id a 7 (To Fix) y veredicto
+      const drUpdate = {
+        die_serial_id: data.die_serial_id ?? null,
+        line_id: data.line_id ?? null,
+        product_id: data.product_id ?? null,
+        operator_id: data.operator_id ?? null,
+        supervisor_id: data.supervisor_id ?? null,
+        description_dr_id: data.description_dr_id ?? null,
+        explanation_id: data.explanation_id ?? null,
+        if_sample: data.if_sample ?? 0,
+        note: data.note ?? '',
+        status_id: 7,
+        verdict: 'To Fix'
+      };
+      await axios.put(`/api/damage-report/${id}`, drUpdate, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      // 2. Actualizar el die_serial a status 7 (To Fix)
+      if (data && data.die_serial_id) {
+        const res = await axios.get(`/api/die-serial/${data.die_serial_id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const serial = res.data;
+        await updateDieSerial(data.die_serial_id, {
+          serial_number: serial.serial_number,
+          die_description_id: serial.die_description_id,
+          status_id: 7,
+          inner: serial.inner == null ? 0 : serial.inner,
+          outer: serial.outer == null ? 0 : serial.outer,
+          proudness: serial.proudness == null ? 0 : serial.proudness
+        });
+      }
+
+      // 3. Registrar historial en die_serial_history con inner/outer_to_grind y nota
+      if (data && data.die_serial_id) {
+        await createDieSerialHistory({
+          die_serial_id: data.die_serial_id,
+          status_id: 7, // To Fix
+          inner_to_grind: parseFloat(innerToGrind) || 0,
+          outer_to_grind: parseFloat(outerToGrind) || 0,
+          note: fixNote,
+          damage_report_id: id,
+          observed_damage_id: data.description_dr_id,
+          performed_by: data.operator_id,
+          product_id: data.product_id,
+          line_id: data.line_id
+          // Los demás campos se insertan como null/no
+        });
+      }
+
+      setShowFixModal(false);
+      setFixNote('');
+      setInnerToGrind('');
+      setOuterToGrind('');
+      alert('Die status updated to To Fix and history saved.');
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.error || err.message));
+    }
+    if (onClose) onClose();
+  };
+  
 
   useEffect(() => {
     if (open && id) {
       setLoading(true);
-      getDamageReportById(id)
-        .then(setData)
+      axios.get(`/api/damage-report/raw/${id}`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      })
+        .then(res => {
+          console.log('DR RAW recibido al seleccionar IDDR:', res.data);
+          setData(res.data);
+        })
         .finally(() => setLoading(false));
     }
   }, [open, id]);
+
+  const handleGoodSubmit = async () => {
+    try {
+      const token = localStorage.getItem('token');
+      // 1. Actualizar el Damage Report: status_id a 6 (Closed) y nota
+      // Construir el objeto con todos los datos existentes del DR, cambiando solo el status
+      const drUpdate = {
+        die_serial_id: data.die_serial_id ?? null,
+        line_id: data.line_id ?? null,
+        product_id: data.product_id ?? null,
+        operator_id: data.operator_id ?? null,
+        supervisor_id: data.supervisor_id ?? null,
+        description_dr_id: data.description_dr_id ?? null,
+        explanation_id: data.explanation_id ?? null,
+        if_sample: data.if_sample ?? 0,
+        note: data.note ?? '',
+        status_id: 6,
+        verdict: data.verdict ?? ''
+      };
+      console.log('DR PUT update:', drUpdate);
+      await axios.put(`/api/damage-report/${id}`,
+        drUpdate,
+        {
+          headers: { Authorization: `Bearer ${token}` }
+        }
+      );
+
+      // 2. Actualizar el die_serial a status 2 (Circulation)
+      if (data && data.die_serial_id) {
+        const res = await axios.get(`/api/die-serial/${data.die_serial_id}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const serial = res.data;
+        await updateDieSerial(data.die_serial_id, {
+          serial_number: serial.serial_number,
+          die_description_id: serial.die_description_id,
+          status_id: 2,
+          inner: serial.inner == null ? 0 : serial.inner,
+          outer: serial.outer == null ? 0 : serial.outer,
+          proudness: serial.proudness == null ? 0 : serial.proudness
+        });
+      }
+
+      // 3. Registrar historial en die_serial_history
+      if (data && data.die_serial_id) {
+        await createDieSerialHistory({
+          die_serial_id: data.die_serial_id,
+          status_id: 2, // Circulation
+          note: goodNote,
+          damage_report_id: id,
+          observed_damage_id: data.description_dr_id,
+          performed_by: data.operator_id, // id usuario
+          product_id: data.product_id,
+          line_id: data.line_id
+          // Los demás campos se insertan como null/no
+        });
+      }
+
+      setShowGoodModal(false);
+      setGoodNote('');
+      alert('Die status updated to Circulation and history saved.');
+    } catch (err) {
+      alert('Error: ' + (err.response?.data?.error || err.message));
+    }
+    if (onClose) onClose();
+  };
 
   if (!open) return null;
 
@@ -95,10 +299,51 @@ const DamageReportViewModal = ({ open, onClose, id }) => {
           )}
         </div>
         {/* Botones */}
-        <div className="flex justify-center gap-6 pb-6">
-          <button className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-6 rounded-xl text-lg shadow">Good</button>
-          <button className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-6 rounded-xl text-lg shadow">To Fix</button>
-          <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl text-lg shadow">To Scrap</button>
+        <div className="grid grid-cols-3 gap-6 pb-6">
+          <button className="w-full bg-[#7CA6F7] hover:bg-[#264893] text-[#264893] hover:text-white font-bold py-3 rounded-xl text-lg border-2 border-[#7CA6F7] transition-colors duration-150" onClick={() => setShowGoodModal(true)}>Good</button>
+      {/* Modal para motivo de diagnóstico 'Good' */}
+      {showGoodModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md relative flex flex-col items-center">
+            <h2 className="text-xl font-bold text-[#264893] mb-4 text-center">Why is the die in good condition?</h2>
+            <textarea className="w-full border-2 border-[#7CA6F7] rounded-xl p-3 mb-4 text-lg" rows={3} value={goodNote} onChange={e => setGoodNote(e.target.value)} placeholder="Enter your reason..." />
+            <div className="flex gap-4">
+              <button className="bg-[#7CA6F7] hover:bg-[#264893] text-[#264893] hover:text-white font-bold py-2 px-6 rounded-xl text-lg border-2 border-[#7CA6F7]" onClick={handleGoodSubmit}>Confirm</button>
+              <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl text-lg" onClick={() => setShowGoodModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+          <button className="w-full bg-[#7CA6F7] hover:bg-[#264893] text-[#264893] hover:text-white font-bold py-3 rounded-xl text-lg border-2 border-[#7CA6F7] transition-colors duration-150" onClick={() => setShowFixModal(true)}>To Fix</button>
+      {/* Modal para motivo de diagnóstico 'To Fix' */}
+      {showFixModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md relative flex flex-col items-center">
+            <h2 className="text-xl font-bold text-[#264893] mb-4 text-center">To Fix - Grinding Details</h2>
+            <input type="number" step="0.01" min="0" className="w-full border-2 border-[#7CA6F7] rounded-xl p-3 mb-4 text-lg" value={innerToGrind} onChange={e => setInnerToGrind(e.target.value)} placeholder='Inner to grind (X 0.001")' />
+            <input type="number" step="0.01" min="0" className="w-full border-2 border-[#7CA6F7] rounded-xl p-3 mb-4 text-lg" value={outerToGrind} onChange={e => setOuterToGrind(e.target.value)} placeholder='Outer to grind (X 0.001")' />
+            <textarea className="w-full border-2 border-[#7CA6F7] rounded-xl p-3 mb-4 text-lg" rows={3} value={fixNote} onChange={e => setFixNote(e.target.value)} placeholder="Enter your reason..." />
+            <div className="flex gap-4">
+              <button className="bg-[#7CA6F7] hover:bg-[#264893] text-[#264893] hover:text-white font-bold py-2 px-6 rounded-xl text-lg border-2 border-[#7CA6F7]" onClick={handleFixSubmit}>Confirm</button>
+              <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl text-lg" onClick={() => setShowFixModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
+          <button className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-lg shadow" onClick={() => setShowScrapModal(true)}>To Scrap</button>
+      {/* Modal para motivo de diagnóstico 'Scrap' */}
+      {showScrapModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-30">
+          <div className="bg-white rounded-2xl p-8 w-full max-w-md relative flex flex-col items-center">
+            <h2 className="text-xl font-bold text-[#264893] mb-4 text-center">Scrap - Reason for scrapping</h2>
+            <textarea className="w-full border-2 border-[#7CA6F7] rounded-xl p-3 mb-4 text-lg" rows={3} value={scrapNote} onChange={e => setScrapNote(e.target.value)} placeholder="Enter your reason..." />
+            <div className="flex gap-4">
+              <button className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-6 rounded-xl text-lg border-2 border-[#7CA6F7]" onClick={handleScrapSubmit}>Confirm</button>
+              <button className="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-xl text-lg" onClick={() => setShowScrapModal(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
         </div>
       </div>
     </div>

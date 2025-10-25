@@ -1,6 +1,50 @@
 const getConnection = require('../db/connection');
 
 class DamageReport {
+  // Obtener los datos crudos (IDs) y los nombres descriptivos de un Damage Report
+  static async findRawById(id) {
+    const db = getConnection();
+    const sql = `
+      SELECT dr.id,
+        dr.die_serial_id,
+        ds.serial_number,
+        dr.line_id,
+        l.name AS line_name,
+        dr.product_id,
+        p.name AS product_name,
+        dr.operator_id,
+        wo.name AS operator_name,
+        dr.supervisor_id,
+        ws.name AS supervisor_name,
+        dr.description_dr_id,
+        ddesc.name AS description_dr,
+        dr.explanation_id,
+        e.name AS explanation,
+        dr.if_sample,
+        dr.note,
+        dr.status_id,
+        dr.verdict,
+        dr.created_at,
+        dr.updated_at
+      FROM damage_report dr
+      LEFT JOIN die_serial ds ON dr.die_serial_id = ds.id
+      LEFT JOIN product_catalog p ON dr.product_id = p.id
+      LEFT JOIN line_catalog l ON dr.line_id = l.id
+      LEFT JOIN worker ws ON dr.supervisor_id = ws.id
+      LEFT JOIN worker wo ON dr.operator_id = wo.id
+      LEFT JOIN description_dr_catalog ddesc ON dr.description_dr_id = ddesc.id
+      LEFT JOIN explanation_catalog e ON dr.explanation_id = e.id
+      WHERE dr.id = ?
+      LIMIT 1
+    `;
+    return new Promise((resolve, reject) => {
+      db.query(sql, [id], (err, results) => {
+        db.end();
+        if (err) return reject(err);
+        resolve(results[0]);
+      });
+    });
+  }
   // Obtener todos los Damage Reports abiertos (status_id = 4)
   static async findOpen() {
     const db = getConnection();

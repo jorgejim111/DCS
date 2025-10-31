@@ -38,9 +38,17 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
   const [openDRModalOpen, setOpenDRModalOpen] = useState(false);
   const [queryModalOpen, setQueryModalOpen] = useState(false);
   const [moveToCircModalOpen, setMoveToCircModalOpen] = useState(false);
+  const [moveToCircSerial, setMoveToCircSerial] = useState(null);
   const handleQueryClick = () => setQueryModalOpen(true);
-  const handleMoveToCircClick = () => setMoveToCircModalOpen(true);
-  const handleMoveToCircClose = () => setMoveToCircModalOpen(false);
+  // Esta función será llamada desde la tabla avanzada
+  const handleMoveToCircClick = (serial) => {
+    setMoveToCircSerial(serial);
+    setMoveToCircModalOpen(true);
+  };
+  const handleMoveToCircClose = () => {
+    setMoveToCircModalOpen(false);
+    setMoveToCircSerial(null);
+  };
   const handleQueryClose = () => setQueryModalOpen(false);
   const handleQuerySelect = (key) => {
     setQueryModalOpen(false);
@@ -106,10 +114,11 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
   {(role === 'admin' || role === 'gerente' || role === 'setupSr' || role === 'setup') && (
     <>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-0">
+        {/* El botón aquí solo abre el modal vacío, la integración real es desde la tabla avanzada */}
         <button
           className="bg-[#264893] hover:bg-[#0C2C65] text-white rounded-xl shadow-lg flex flex-col items-center justify-center p-6 transition-all duration-200 border-4 border-[#0C2C65] focus:outline-none focus:ring-2 focus:ring-[#23B0E8]"
           style={{ minHeight: '170px' }}
-          onClick={handleMoveToCircClick}
+          onClick={() => handleMoveToCircClick(null)}
         >
           <FaSyncAlt className="text-5xl mb-2" />
           <span className="font-bold text-lg">Move to Circulation</span>
@@ -163,6 +172,12 @@ const HomeUser = ({ username = 'User', role = 'produccion', onLogout }) => {
     </>
   )}
   {/* Modal funcional para New Serial# */}
+  {/* Modal para mover a circulación desde la tabla avanzada o botón */}
+  <MoveToCirculationModal
+    open={moveToCircModalOpen}
+    onClose={handleMoveToCircClose}
+    serial={moveToCircSerial}
+  />
   <NewSerialModal open={newSerialModalOpen} onClose={handleNewSerialClose} />
   {/* Modal para seleccionar serial y ver historial */}
   <DieHistorySelectModal

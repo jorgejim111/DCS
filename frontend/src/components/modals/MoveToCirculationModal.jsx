@@ -1,11 +1,16 @@
 import React, { useState } from "react";
+import { getAllDieSerials } from "../../services/dieSerialService";
 import { getDieSerialHistory } from "../../services/dieSerialService";
 import { getDamageReportBySerial } from "../../services/damageReportService";
 import { getDieSerialBySerialNumber, updateDieSerial } from "../../services/dieSerialService";
 import { createDieSerialHistory } from "../../services/dieSerialHistoryService";
 
 const MoveToCirculationModal = ({ open, onClose }) => {
+  const [dieInner, setDieInner] = useState("");
+  const [dieOuter, setDieOuter] = useState("");
+  const [dieProudness, setDieProudness] = useState("");
   const [serial, setSerial] = useState("");
+  const [serialOptions, setSerialOptions] = useState([]);
   const [dieDescription, setDieDescription] = useState("");
   const [status, setStatus] = useState(null); // null, 1=new, 2=circulation, 4=open dr
   const [error, setError] = useState("");
@@ -30,22 +35,47 @@ const MoveToCirculationModal = ({ open, onClose }) => {
   // Limpiar estado al cerrar el modal
   React.useEffect(() => {
     if (!open) {
-  setSerial("");
-  setDieDescription("");
-  setStatus(null);
-  setError("");
-  setLoading(false);
-  setSuccess("");
-  setDieId(null);
-  setDieDescriptionId(null);
+      setSerial("");
+      setDieDescription("");
+      setStatus(null);
+      setError("");
+      setLoading(false);
+      setSuccess("");
+      setDieId(null);
+      setDieDescriptionId(null);
+      setSerialOptions([]);
+    } else {
+      // Al abrir, cargar seriales válidos (status 1 o 7)
+      fetchSerialOptions();
     }
   }, [open]);
+
+  const fetchSerialOptions = async () => {
+    try {
+      setLoading(true);
+      // Usar el servicio con token
+      const [data1, data7] = await Promise.all([
+        getAllDieSerials({ status: 1 }),
+        getAllDieSerials({ status: 7 })
+      ]);
+      // Unifica y filtra duplicados
+      const allSerials = [...(Array.isArray(data1.data) ? data1.data : [data1.data]), ...(Array.isArray(data7.data) ? data7.data : [data7.data])];
+      const uniqueSerials = Array.from(new Set(allSerials.map(s => s.serial_number)))
+        .map(sn => allSerials.find(s => s.serial_number === sn));
+      setSerialOptions(uniqueSerials);
+    } catch (err) {
+      setSerialOptions([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!open) return null;
 
 
   // Estado de botones
   const isNew = status === 1;
+  const isToFix = status === 7;
   const isOpenDR = status === 4;
   const isCirculation = status === 2;
 
@@ -75,6 +105,9 @@ const MoveToCirculationModal = ({ open, onClose }) => {
       setStatus(die.status_id);
       setDieId(die.id);
       setDieDescriptionId(die.die_description_id);
+  setDieInner(die.inner);
+  setDieOuter(die.outer);
+  setDieProudness(die.proudness);
       setError("");
     } catch (e) {
       setError("Error fetching serial info");
@@ -149,19 +182,25 @@ const MoveToCirculationModal = ({ open, onClose }) => {
     if (!dieId || !isNew) return;
     setLoading(true);
     try {
-      // 1. Update die_serial status_id to 2 (Circulation)
-      await updateDieSerial(dieId, { status_id: 2 });
-      // 2. Add die_serial_history record
+      // Update die_serial status_id to 2 (Circulation) y todos los campos actuales
+      await updateDieSerial(dieId, {
+        serial_number: serial,
+        die_description_id: dieDescriptionId,
+        status_id: 2,
+        inner: dieInner !== null && dieInner !== undefined && dieInner !== "" ? dieInner : 0,
+        outer: dieOuter !== null && dieOuter !== undefined && dieOuter !== "" ? dieOuter : 0,
+        proudness: dieProudness !== null && dieProudness !== undefined && dieProudness !== "" ? dieProudness : 0
+      });
+      // 3. Add die_serial_history record
       await createDieSerialHistory({
         die_serial_id: dieId,
         status_id: 2,
-        fecha: new Date().toISOString(),
-        note: "Moved to Circulation from New",
-        die_description_id: dieDescriptionId,
-        // Add more fields if needed (e.g., user, line, etc.)
+        note: "Need be tested by production",
+        // Los demás campos se quedan como null/no
       });
       setSuccess("Die moved to Circulation and history recorded.");
       setStatus(2);
+      if (typeof onClose === 'function') onClose();
     } catch (e) {
       setError("Error moving die to Circulation. Please try again.");
     } finally {
@@ -193,12 +232,14 @@ const MoveToCirculationModal = ({ open, onClose }) => {
         setConfirmingRepair(false);
         return;
       }
-      // 2. Actualizar die_serial
+      // 2. Actualizar die_serial con todos los campos requeridos
       await updateDieSerial(dieId, {
+        serial_number: serial,
+        die_description_id: dieDescriptionId,
+        status_id: 2,
         inner: repairData.inner,
         outer: repairData.outer,
-        proudness: repairData.proudness,
-        status_id: 2
+        proudness: repairData.proudness
       });
       // 3. Insertar en die_serial_history
       await createDieSerialHistory({
@@ -214,9 +255,10 @@ const MoveToCirculationModal = ({ open, onClose }) => {
         observed_damage_id: dr.observed_damage_id,
         performed_by: dr.performed_by, // O usa el usuario de sesión si está disponible
       });
-      setSuccess("Repaired die moved to Circulation and history recorded.");
-      setStatus(2);
-      setShowRepairModal(false);
+  setSuccess("Repaired die moved to Circulation and history recorded.");
+  setStatus(2);
+  setShowRepairModal(false);
+  if (typeof onClose === 'function') onClose();
     } catch (e) {
       setRepairError("Error moving repaired die to Circulation. Please try again.");
     } finally {
@@ -239,8 +281,17 @@ const MoveToCirculationModal = ({ open, onClose }) => {
             className="border px-3 py-2 rounded w-full mb-2"
             value={serial}
             onChange={e => setSerial(e.target.value)}
-            placeholder="Enter Serial Number"
+            list="serial-datalist"
+            placeholder="Select or enter Serial Number"
+            autoComplete="off"
           />
+          <datalist id="serial-datalist">
+            {serialOptions.map(option => (
+              <option key={option.serial_number + '-' + (option.die_description_id || '')} value={option.serial_number}>
+                {option.serial_number} - {option.die_description_text || option.die_description || ""}
+              </option>
+            ))}
+          </datalist>
           <button
             className="bg-[#23B0E8] hover:bg-[#0C2C65] text-white font-semibold px-4 py-2 rounded transition text-lg w-full mb-2 disabled:opacity-60"
             onClick={handleCheckDieInfo}
@@ -269,8 +320,8 @@ const MoveToCirculationModal = ({ open, onClose }) => {
             {loading && isNew ? "Processing..." : "Move New Die to Circulation"}
           </button>
           <button
-            className={`px-4 py-2 rounded font-semibold text-lg w-full ${isOpenDR ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
-            disabled={!isOpenDR}
+            className={`px-4 py-2 rounded font-semibold text-lg w-full ${isToFix ? 'bg-blue-700 hover:bg-blue-800 text-white' : 'bg-gray-300 text-gray-500 cursor-not-allowed'}`}
+            disabled={!isToFix}
             onClick={() => {
               setRepairData({ inner: "", outer: "", proudness: "", innerGrinding: "", outerGrinding: "" });
               setRepairError("");

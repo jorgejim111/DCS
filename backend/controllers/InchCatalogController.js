@@ -1,5 +1,3 @@
-  // ...existing code...
-
 const InchCatalog = require('../models/InchCatalog');
 const yup = require('yup');
 
@@ -9,15 +7,15 @@ const inchSchema = yup.object().shape({
 
 module.exports = {
   // Obtener solo pulgadas activas (para selects en frontend)
-  async getActive(req, res) {
+  getActive: async function(req, res) {
     try {
-      const inches = await InchCatalog.findAll({ where: { is_active: true } });
+      const inches = await InchCatalog.findAll();
       res.json(inches);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching active inches', details: error.message });
     }
   },
-  async getAllRaw(req, res) {
+  getAllRaw: async function(req, res) {
     try {
       const inches = await InchCatalog.findAllRaw();
       res.json(inches);
@@ -25,9 +23,9 @@ module.exports = {
       res.status(500).json({ error: 'Error fetching all inches', details: error.message });
     }
   },
-  async getAll(req, res) {
+  getAll: async function(req, res) {
     try {
-      const inches = await InchCatalog.findAll({ where: { is_active: true } });
+      const inches = await InchCatalog.findAll();
       res.json(inches);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching inches', details: error.message });

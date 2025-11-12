@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BaseTable from '../components/BaseTable';
-import { getDescriptions, updateDescription, createDescription } from '../services/descriptionService';
+import { getAllDescriptions, updateDescription, createDescription } from '../services/descriptionService';
 
 const columns = [
   { key: 'name', label: 'Description' }
@@ -16,7 +16,7 @@ const DescriptionCatalog = () => {
   const fetchAllDescriptions = async () => {
     try {
       const token = localStorage.getItem('token');
-      const descriptions = await getDescriptions(token);
+  const descriptions = await getAllDescriptions();
       // Ordenar ascendente por name
       const sorted = descriptions.slice().sort((a, b) => {
         if (a.name && b.name) {

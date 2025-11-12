@@ -52,7 +52,9 @@ const DieSerialCatalog = (props) => {
       params.statusFilter = statusFilter;
     }
     const res = await dieSerialService.getAllDieSerials(params);
-    setRecords(res.data);
+    // Si la respuesta es un array, úsala directamente; si es objeto, usa .data
+    const rows = Array.isArray(res) ? res : (res?.data ?? []);
+    setRecords(rows);
   };
 
   // Fetch select options for foreign keys
@@ -75,8 +77,17 @@ const DieSerialCatalog = (props) => {
   // Filtrado y paginación en frontend
   useEffect(() => {
     let filtered = records;
+    // Filtrar por status_id si no es 'all'
+    if (statusFilter !== 'all') {
+      const statusMap = {
+        circulation: 2,
+        new: 1,
+        scraped: 3
+      };
+      filtered = filtered.filter(r => r.status_id === statusMap[statusFilter]);
+    }
     if (filter.trim() !== '') {
-      filtered = records.filter(r =>
+      filtered = filtered.filter(r =>
         (r.die_description_text || '').toLowerCase().includes(filter.toLowerCase())
       );
     }
@@ -85,7 +96,7 @@ const DieSerialCatalog = (props) => {
     if (page > Math.max(1, Math.ceil(filtered.length / limit))) {
       setPage(1);
     }
-  }, [records, filter, limit]);
+  }, [records, filter, limit, statusFilter]);
 
   // Add or edit record
   const handleSave = async (data) => {

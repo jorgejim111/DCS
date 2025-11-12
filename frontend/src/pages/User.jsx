@@ -17,6 +17,8 @@ const User = () => {
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('role');
+    localStorage.removeItem('username');
+    localStorage.removeItem('email');
     navigate('/');
   };
   const username = localStorage.getItem('username') || 'User';

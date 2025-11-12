@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BaseTable from '../components/BaseTable';
-import { getDescriptionDrs, updateDescriptionDr, createDescriptionDr } from '../services/descriptionDrService';
+import { getAllDescriptionDrs, updateDescriptionDr, createDescriptionDr } from '../services/descriptionDrService';
 import { useNavigate } from 'react-router-dom';
 
 const columns = [
@@ -16,7 +16,7 @@ const DescriptionDrCatalog = () => {
   const fetchAllDescriptionDrs = async () => {
     try {
       const token = localStorage.getItem('token');
-      const drs = await getDescriptionDrs(token);
+  const drs = await getAllDescriptionDrs(token);
       setData(drs);
     } catch (err) {
       if (err?.response?.status === 403) {

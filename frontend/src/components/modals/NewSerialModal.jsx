@@ -20,19 +20,16 @@ const NewSerialModal = ({ open, onClose }) => {
       setLoading(true);
       getAllDieDescriptions()
         .then(res => {
-          const data = res.data;
-          const mapped = Array.isArray(data)
-            ? data
-                .map(d => ({
-                  id: d.id,
-                  die_description: d.die_description || d.name || ''
-                }))
-                .filter(d => d.die_description)
-                .sort((a, b) => a.die_description.localeCompare(b.die_description))
-            : [];
+          const data = Array.isArray(res) ? res : (Array.isArray(res.data) ? res.data : []);
+          const mapped = data.map(d => ({ id: d.id, die_description: d.die_description }));
           setDieDescriptions(mapped);
         })
-        .catch(() => setDieDescriptions([]))
+        .catch(err => {
+          if (err?.response?.status === 403) {
+            setErrors(prev => ({ ...prev, dieDescription: 'No tienes permisos para ver el catálogo Die Description.' }));
+          }
+          setDieDescriptions([]);
+        })
         .finally(() => setLoading(false));
     }
   }, [open]);
@@ -68,19 +65,21 @@ const NewSerialModal = ({ open, onClose }) => {
         return;
       }
       // Crear serial
+      const token = localStorage.getItem('token');
       const serialRes = await addDieSerial({
         serial_number: serial.toUpperCase(),
         die_description_id: dieDesc.id,
         status_id: 1,
-        inner: parseFloat(inner),
-        outer: parseFloat(outer),
-        proudness: parseFloat(proudness)
-      });
+        inner: Number(inner),
+        outer: Number(outer),
+        proudness: Number(proudness)
+      }, token);
       // Registrar en die_serial_history
-      const dieSerialId = serialRes?.data?.id;
+      // El backend puede devolver el id directamente o dentro de data
+      const dieSerialId = serialRes?.id || serialRes?.data?.id;
       if (!dieSerialId) {
-        console.error("ERROR: El backend no devolvió el id del nuevo serial. serialRes=", serialRes);
-        setSaveStatus("Error: El backend no devolvió el id del nuevo serial. No se puede crear historial.");
+        console.error("ERROR: Backend did not return the new serial id. serialRes=", serialRes);
+        setSaveStatus("Error: Backend did not return the new serial id. Cannot create history.");
         setLoading(false);
         return;
       }
@@ -94,7 +93,7 @@ const NewSerialModal = ({ open, onClose }) => {
         proudness: parseFloat(proudness),
         performed_by: 2 // id de usuario, ajustar si tienes el id dinámico
         // Los demás campos quedan como null por default
-      });
+      }, token);
       setSaveStatus("Serial created successfully!");
       handleClose();
     } catch (err) {
@@ -145,6 +144,7 @@ const NewSerialModal = ({ open, onClose }) => {
               list="die-description-list"
               autoComplete="off"
               required
+              disabled={!!errors.dieDescription}
             />
             <datalist id="die-description-list">
               {dieDescriptions
@@ -153,6 +153,9 @@ const NewSerialModal = ({ open, onClose }) => {
                   <option key={d.id} value={d.die_description} />
                 ))}
             </datalist>
+            {errors.dieDescription && (
+              <div className="text-red-600 text-xs mt-1">{errors.dieDescription}</div>
+            )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div>

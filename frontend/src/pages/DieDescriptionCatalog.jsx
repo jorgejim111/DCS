@@ -28,28 +28,39 @@ const DieDescriptionCatalog = () => {
   };
   // Fetch all records
   const fetchRecords = async () => {
-    const res = await dieDescriptionService.getAllDieDescriptions();
-    // Normaliza is_active a 1/0 para lógica de botones
-    const normalized = res.data.map(row => ({
-      ...row,
-      is_active: row.is_active === true || row.is_active === 1 || row.is_active === 'Active' ? 1 : 0
-    }));
-    // Ordena ascendente por die_description
-    const sorted = normalized.slice().sort((a, b) => {
-      if (a.die_description && b.die_description) {
-        return a.die_description.localeCompare(b.die_description);
-      }
-      return 0;
-    });
-    setRecords(sorted);
+    try {
+      const res = await dieDescriptionService.getAllDieDescriptions();
+      // Si la respuesta es un array, úsala directamente
+      const rows = Array.isArray(res) ? res : (res?.data ?? []);
+      // Normaliza is_active a 1/0 para lógica de botones
+      const normalized = rows.map(row => ({
+        ...row,
+        // is_active: 1 (activo), 0 (inactivo)
+        is_active: row.is_active === true || row.is_active === 1 || row.is_active === 'Active' ? 1 : 0,
+        // Para mostrar el texto correcto en la tabla
+        active_text: (row.is_active === true || row.is_active === 1 || row.is_active === 'Active') ? 'Active' : 'Inactive'
+      }));
+      // Ordena ascendente por die_description
+      const sorted = normalized.slice().sort((a, b) => {
+        if (a.die_description && b.die_description) {
+          return a.die_description.localeCompare(b.die_description);
+        }
+        return 0;
+      });
+      setRecords(sorted);
+    } catch (error) {
+      setRecords([]);
+      console.error('Error al obtener die descriptions:', error);
+    }
   };
 
   // Fetch select options for foreign keys
   const fetchSelectOptions = async () => {
+    const token = localStorage.getItem('token');
     const [inchRes, partRes, descRes] = await Promise.all([
-      dieDescriptionService.getActiveInches(),
-      dieDescriptionService.getActiveParts(),
-      dieDescriptionService.getActiveDescriptions(),
+      dieDescriptionService.getActiveInches(token),
+      dieDescriptionService.getActiveParts(token),
+      dieDescriptionService.getActiveDescriptions(token),
     ]);
     setSelectOptions({
       inch_id: inchRes.data,
@@ -125,16 +136,14 @@ const DieDescriptionCatalog = () => {
         </div>
       </div>
       <BaseTableAdvanced
-        schema={[
-          ...dieDescriptionSchema.filter(f => f.key !== 'id'),
-          { key: 'status', label: 'Active' },
-        ]}
+        schema={dieDescriptionSchema.filter(f => f.key !== 'id')}
         data={paginatedData.map(row => ({
           ...row,
           inch: row.inch,
           part: row.part,
           description: row.description,
-          status: row.is_active === 1 ? 'Active' : 'Inactive',
+          is_active: row.is_active,
+          active_text: row.active_text
         }))}
         onEdit={rec => { setEditRecord(rec); setModalOpen(true); }}
         onToggleActive={handleToggleActive}

@@ -20,7 +20,7 @@ module.exports = {
       if (!report) {
         return res.status(404).json({ error: 'Damage report not found' });
       }
-      console.log('DR RAW recibido:', report);
+  // ...existing code...
       res.json(report);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching raw damage report', details: error.message });
@@ -68,7 +68,7 @@ module.exports = {
   async getNextId(req, res) {
     try {
       const nextId = await DamageReport.getNextId();
-      console.log('DamageReport getNextId:', nextId);
+  // ...existing code...
       res.json({ nextId });
     } catch (error) {
       res.status(500).json({ error: 'Error fetching next damage report id', details: error.message });

@@ -1,19 +1,63 @@
-import axios from 'axios';
+export const getActiveInches = async (token) => {
+  const response = await api.get('/api/inch/active', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
 
-const API_URL = '/api/die-description';
+export const getActiveParts = async (token) => {
+  const response = await api.get('/api/part/active', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
 
-function getAuthHeader() {
-	const token = localStorage.getItem('token');
-	return token ? { Authorization: `Bearer ${token}` } : {};
-}
+export const getActiveDescriptions = async (token) => {
+  const response = await api.get('/api/description/active', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+import api from './api';
 
-export const getAllDieDescriptions = () => axios.get(API_URL, { headers: getAuthHeader() });
-export const addDieDescription = (data) => axios.post(API_URL, data, { headers: getAuthHeader() });
-export const updateDieDescription = (id, data) => axios.put(`${API_URL}/${id}`, data, { headers: getAuthHeader() });
-export const activateDieDescription = (id) => axios.patch(`${API_URL}/${id}/activate`, {}, { headers: getAuthHeader() });
-export const deactivateDieDescription = (id) => axios.patch(`${API_URL}/${id}/deactivate`, {}, { headers: getAuthHeader() });
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
 
-// Foreign key fetchers
-export const getActiveInches = () => axios.get('/api/inch/active', { headers: getAuthHeader() });
-export const getActiveParts = () => axios.get('/api/part/active', { headers: getAuthHeader() });
-export const getActiveDescriptions = () => axios.get('/api/description/active', { headers: getAuthHeader() });
+export const getDieDescriptions = async () => {
+  const response = await api.get('/api/die-description', {
+    headers: getAuthHeader()
+  });
+  return response.data;
+};
+
+export const createDieDescription = async (data, token) => {
+  const response = await api.post('/api/die-description', data, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const updateDieDescription = async (id, data) => {
+  const headers = getAuthHeader();
+  const response = await api.put(`/api/die-description/${id}`, data, {
+    headers
+  });
+  return response.data;
+};
+
+export const deleteDieDescription = async (id, token) => {
+  const response = await api.delete(`/api/die-description/${id}`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const getAllDieDescriptions = async () => {
+  const headers = getAuthHeader();
+  const response = await api.get('/api/die-description/all', {
+    headers
+  });
+  return response.data;
+};

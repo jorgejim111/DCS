@@ -4,20 +4,18 @@ import { Link } from 'react-router-dom';
 const menuByRole = {
   produccion: [
     { name: 'Home', path: '/user' },
-    { name: 'Create Serial#', path: '/user/create-serial' },
-    { name: 'Register Movement', path: '/user/register-movement' },
-    { name: 'My History', path: '/user/my-history' },
+    { name: 'Dashboard', path: '/user/dashboard' },
+    { name: 'My Profile', path: '/user/profile' },
   ],
   setup: [
     { name: 'Home', path: '/user' },
-    { name: 'Register Movement', path: '/user/register-movement' },
-    { name: 'My History', path: '/user/my-history' },
+    { name: 'Dashboard', path: '/user/dashboard' },
+    { name: 'My Profile', path: '/user/profile' },
   ],
   admin: [
     { name: 'Home', path: '/user' },
-    { name: 'Create Serial#', path: '/user/create-serial' },
-    { name: 'Register Movement', path: '/user/register-movement' },
-    { name: 'My History', path: '/user/my-history' },
+    { name: 'Dashboard', path: '/user/dashboard' },
+    { name: 'My Profile', path: '/user/profile' },
     { name: 'Admin Panel', path: '/admin' },
   ],
   // Puedes agregar más roles y menús aquí

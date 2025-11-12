@@ -19,7 +19,7 @@ module.exports = {
   // Obtener todas las líneas activas
   async getAll(req, res) {
     try {
-      const lines = await LineCatalog.findAll({ where: { is_active: true } });
+      const lines = await LineCatalog.findAll();
       res.json(lines);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching lines', details: error.message });

@@ -7,15 +7,15 @@ const descriptionSchema = yup.object().shape({
 
 module.exports = {
   // Obtener solo descripciones activas (para selects en frontend)
-  async getActive(req, res) {
+  getActive: async function(req, res) {
     try {
-      const descriptions = await DescriptionCatalog.findAll({ where: { is_active: true } });
+      const descriptions = await DescriptionCatalog.findAll();
       res.json(descriptions);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching active descriptions', details: error.message });
     }
   },
-  async getAllRaw(req, res) {
+  getAllRaw: async function(req, res) {
     try {
       const descriptions = await DescriptionCatalog.findAllRaw();
       res.json(descriptions);
@@ -23,9 +23,9 @@ module.exports = {
       res.status(500).json({ error: 'Error fetching all descriptions', details: error.message });
     }
   },
-  async getAll(req, res) {
+  getAll: async function(req, res) {
     try {
-      const descriptions = await DescriptionCatalog.findAll({ where: { is_active: true } });
+      const descriptions = await DescriptionCatalog.findAll();
       res.json(descriptions);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching descriptions', details: error.message });

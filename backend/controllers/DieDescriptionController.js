@@ -12,10 +12,20 @@ const dieDescriptionSchema = yup.object().shape({
 });
 
 module.exports = {
+  async getAllRaw(req, res) {
+    console.log('Entrando a getAllRaw');
+    try {
+      const descriptions = await DieDescription.findAllRaw();
+      console.log('Resultado de findAllRaw:', descriptions);
+      res.json(descriptions);
+    } catch (error) {
+      console.error('Error en getAllRaw:', error);
+      res.status(500).json({ error: 'Error fetching all die descriptions', details: error.message });
+    }
+  },
   async getAll(req, res) {
     try {
-  // Mostrar todos los registros, activos e inactivos
-  const descriptions = await DieDescription.findAll();
+      const descriptions = await DieDescription.findAll();
       res.json(descriptions);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching die descriptions', details: error.message });
@@ -24,7 +34,6 @@ module.exports = {
   async getActive(req, res) {
     try {
       const descriptions = await DieDescription.findActive();
-      console.log('Active die descriptions from DB:', descriptions);
       res.json(descriptions);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching active die descriptions', details: error.message });

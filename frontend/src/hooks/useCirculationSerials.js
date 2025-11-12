@@ -9,9 +9,9 @@ export default function useCirculationSerials() {
   useEffect(() => {
     setLoading(true);
     dieSerialService
-      .getAllDieSerials({ statusFilter: 'circulation' })
+      .getAllDieSerials({ status: 2 })
       .then(res => {
-        setData(res.data);
+        setData(res); // res ya es el array de seriales
         setLoading(false);
       })
       .catch(err => {

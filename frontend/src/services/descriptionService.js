@@ -1,34 +1,41 @@
-export const getActiveDescriptions = async (token) => {
-  const response = await axios.get('/api/description/active', {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
+import api from './api';
+
+const getAuthHeader = () => {
+  const token = localStorage.getItem('token');
+  return token ? { Authorization: `Bearer ${token}` } : {};
 };
-export const createDescription = async (data, token) => {
-  const response = await axios.post('/api/description', data, {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-  return response.data;
-};
-import axios from 'axios';
 
 export const getDescriptions = async (token) => {
-  // Obtener todos los registros, activos e inactivos
-  const response = await axios.get('/api/description/all', {
+  const response = await api.get('/api/description', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const getAllDescriptions = async () => {
+  const token = localStorage.getItem('token');
+  const response = await api.get('/api/description/all', {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+  return response.data;
+};
+
+export const createDescription = async (data, token) => {
+  const response = await api.post('/api/description', data, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;
 };
 
 export const updateDescription = async (id, data, token) => {
-  const response = await axios.put(`/api/description/${id}`, data, {
+  const response = await api.put(`/api/description/${id}`, data, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;
 };
 
-export const toggleDescriptionActive = async (id, isActive, token) => {
-  const response = await axios.put(`/api/description/${id}`, { is_active: isActive }, {
+export const deleteDescription = async (id, token) => {
+  const response = await api.delete(`/api/description/${id}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
   return response.data;

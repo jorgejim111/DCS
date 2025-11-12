@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getActive as getActivePositions } from "../../services/positionService";
+import { getActivePositions } from "../../services/positionService";
 import userService from "../../services/userService";
 
 export default function WorkerModal({ open, onClose, onSave, worker }) {
@@ -12,7 +12,7 @@ export default function WorkerModal({ open, onClose, onSave, worker }) {
 
   useEffect(() => {
     const fetchDropdowns = async () => {
-      setPositions(await getActivePositions());
+  setPositions(await getActivePositions());
   setUsers(await userService.getAll());
     };
     fetchDropdowns();

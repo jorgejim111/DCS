@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BaseTable from '../components/BaseTable';
-import { getParts, updatePart, createPart } from '../services/partService';
+import { getAllParts, updatePart, createPart } from '../services/partService';
 
 const columns = [
   { key: 'name', label: 'Part Name' }
@@ -16,7 +16,7 @@ const PartCatalog = () => {
   const fetchAllParts = async () => {
     try {
       const token = localStorage.getItem('token');
-      const parts = await getParts(token);
+  const parts = await getAllParts(token);
       // Ordenar ascendente por nombre
       const sortedParts = parts.slice().sort((a, b) => {
         if (a.name && b.name) {

@@ -74,51 +74,91 @@ const DamageReportModal = ({ onClose }) => {
 
 
   // Obtener el siguiente ID Damage Report al abrir el modal
+
   useEffect(() => {
     axios.get('/api/damage-report/next/id', {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     })
       .then(res => {
-        // Si el backend devuelve el último ID registrado, sumamos 1 para mostrar el siguiente
         const next = Number(res.data.nextId);
         setNextId(isNaN(next) ? '(auto)' : String(next + 1));
       })
       .catch(() => setNextId('(auto)'));
-    // Cargar productos activos
     getProducts()
-      .then(data => setProducts(Array.isArray(data) ? data.filter(p => p.is_active) : [])) 
-      .catch(() => setProducts([]));
-    // Cargar líneas activas
+      .then(data => {
+        const productos = Array.isArray(data) ? data.filter(p => p.is_active) : [];
+        setProducts(productos);
+  // ...existing code...
+      })
+      .catch(() => {
+        setProducts([]);
+  // ...existing code...
+      });
     const token = localStorage.getItem('token');
     getLines(token)
-      .then(data => setLines(Array.isArray(data) ? data.filter(l => l.is_active) : []))    
-      .catch(() => setLines([]));
-    // Cargar supervisores (position_id 1,2,3)
+      .then(data => {
+        const lineas = Array.isArray(data) ? data.filter(l => l.is_active) : [];
+        setLines(lineas);
+  // ...existing code...
+      })
+      .catch(() => {
+        setLines([]);
+  // ...existing code...
+      });
     workerService.getAll()
       .then(data => {
-        setSupervisors(Array.isArray(data) ? data.filter(w => [1,2,3].includes(w.position_id) && w.is_active) : []); 
-        setOperators(Array.isArray(data) ? data.filter(w => [1,2,3,4,5].includes(w.position_id) && w.is_active) : []); 
+        const supervisores = Array.isArray(data) ? data.filter(w => [1,2,3].includes(w.position_id) && w.is_active) : [];
+        const operadores = Array.isArray(data) ? data.filter(w => [1,2,3,4,5].includes(w.position_id) && w.is_active) : [];
+        setSupervisors(supervisores);
+        setOperators(operadores);
+  // ...existing code...
       })
       .catch(() => {
         setSupervisors([]);
         setOperators([]);
+  // ...existing code...
       });
     // Cargar Description of Damage
     getDescriptionDrs(token)
-      .then(data => setDescriptionsDr(Array.isArray(data) ? data : []))
-      .catch(() => setDescriptionsDr([]));
+      .then(data => {
+        const descDrs = Array.isArray(data) ? data : [];
+        setDescriptionsDr(descDrs);
+  // ...existing code...
+      })
+      .catch(() => {
+        setDescriptionsDr([]);
+  // ...existing code...
+      });
     // Cargar Explanation
     getExplanations(token)
-      .then(data => setExplanations(Array.isArray(data) ? data : []))
-      .catch(() => setExplanations([]));
+      .then(data => {
+        const expls = Array.isArray(data) ? data : [];
+        setExplanations(expls);
+  // ...existing code...
+      })
+      .catch(() => {
+        setExplanations([]);
+  // ...existing code...
+      });
   }, []);
 
-  // Encontrar el serial seleccionado
-  const selectedSerial = serials.find(s => String(s.id) === String(serialId));
+  // Nuevo useEffect para log de serials cuando cambian
+  useEffect(() => {
+    if (Array.isArray(serials)) {
+      const circulationSerials = serials.filter(s => s.status_id === 2);
+  // ...existing code...
+    } else {
+  // ...existing code...
+    }
+  }, [serials]);
+
+  // Encontrar el serial seleccionado, evitando error si serials es undefined
+  const selectedSerial = Array.isArray(serials) ? serials.find(s => String(s.id) === String(serialId)) : undefined;
 
   // Autollenar Inch, Part y Description al seleccionar serialInput válido
   useEffect(() => {
-    const serialObj = serials.find(s => s.serial_number === serialInput);
+    const arr = Array.isArray(serials) ? serials : [];
+    const serialObj = arr.find(s => s.serial_number === serialInput);
     if (serialObj) {
       setSerialId(serialObj.id);
       getSerialDetailsForReport(serialObj.id)
@@ -142,10 +182,11 @@ const DamageReportModal = ({ onClose }) => {
 
   // Validar todos los campos obligatorios
   const validate = () => {
-    const newErrors = {};
-    // Serial
-    const serialObj = serials.find(s => s.serial_number === serialInput);
-    if (!serialInput || !serialObj) newErrors.serialId = 'Serial is required and must be valid';
+  const newErrors = {};
+  // Serial
+  const arrSerials = Array.isArray(serials) ? serials : [];
+  const serialObj = arrSerials.find(s => s.serial_number === serialInput);
+  if (!serialInput || !serialObj) newErrors.serialId = 'Serial is required and must be valid';
     // Product
     const productObj = products.find(p => p.name === productInput);
     if (!productInput || !productObj) newErrors.productId = 'Product is required and must be valid';
@@ -222,6 +263,7 @@ const DamageReportModal = ({ onClose }) => {
     e.preventDefault();
     setSaveStatus('');
     if (!validate()) return;
+
     try {
       // Armar el objeto de datos según la tabla
       const data = {
@@ -236,9 +278,16 @@ const DamageReportModal = ({ onClose }) => {
         note: supervisorExplanation || null,
         status_id: 4 // ID correcto para "Open DR"
       };
-      console.log('DamageReport POST data:', data);
+  // ...existing code...
       // Guardar Damage Report y obtener el ID
-      const drResult = await createDamageReport(data);
+      let drResult;
+      try {
+        drResult = await createDamageReport(data);
+  // ...existing code...
+      } catch (err) {
+        console.error('[DR] Error from createDamageReport:', err);
+        throw err;
+      }
       let damageReportId = drResult;
       // Si el backend devuelve un objeto con id, úsalo
       if (drResult && typeof drResult === 'object' && drResult.id) {
@@ -247,30 +296,32 @@ const DamageReportModal = ({ onClose }) => {
       // Cambiar status del die_serial a 4 (Damage Report)
       try {
         // Obtener el die_serial completo
+        const token = localStorage.getItem('token');
         const res = await axios.get(`/api/die-serial/${serialId}`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          headers: { Authorization: `Bearer ${token}` }
         });
         const serial = res.data;
-        // Log para depuración
-        console.log('die_serial a actualizar:', serial);
-        // Enviar todos los campos requeridos junto con el nuevo status_id, usando 0 si algún campo es null
-        await updateDieSerial(serialId, {
+        const updatePayload = {
           serial_number: serial.serial_number,
           die_description_id: serial.die_description_id,
           status_id: 4,
           inner: serial.inner == null ? 0 : serial.inner,
           outer: serial.outer == null ? 0 : serial.outer,
           proudness: serial.proudness == null ? 0 : serial.proudness
-        });
+        };
+  // ...existing code...
+        const updateResult = await updateDieSerial(serialId, updatePayload, token);
+  // ...existing code...
       } catch (err) {
-        console.error('Error updating die_serial status:', err);
+        console.error('[DieSerial] Error from updateDieSerial:', err);
       }
 
       // Paso 3: Crear registro en die_serial_history
       try {
         // Importar aquí para evitar ciclos si es necesario
         const { createDieSerialHistory } = await import('../../services/dieSerialHistoryService');
-        await createDieSerialHistory({
+        const token = localStorage.getItem('token');
+        const historyPayload = {
           die_serial_id: serialId,
           status_id: 4,
           note: supervisorExplanation || null,
@@ -279,9 +330,12 @@ const DamageReportModal = ({ onClose }) => {
           performed_by: operatorId, // O supervisorId según tu lógica
           product_id: productId,
           line_id: lineId
-        });
+        };
+  // ...existing code...
+        const historyResult = await createDieSerialHistory(historyPayload, token);
+  // ...existing code...
       } catch (err) {
-        console.error('Error creating die_serial_history:', err);
+        console.error('[DieSerialHistory] Error from createDieSerialHistory:', err);
       }
 
       setSaveStatus('Damage Report saved successfully!');
@@ -414,6 +468,7 @@ const DamageReportModal = ({ onClose }) => {
             {/* Fila 1 */}
             <div className="col-span-2 flex flex-col">
               <label className="text-xs font-bold text-blue-900 mb-1">Serial # <span className="text-red-600">*</span></label>                                      <input
+                type="text"
                 className="border px-2 py-1 rounded"
                 placeholder="Select serial..."
                 value={serialInput}
@@ -423,12 +478,18 @@ const DamageReportModal = ({ onClose }) => {
                 required
               />
               <datalist id="serial-list">
-                {serials
-                  .filter(s => s.serial_number.toLowerCase().includes(serialInput.toLowerCase()))
+                {(Array.isArray(serials) ? serials : [])
+                  .filter(s => typeof s.serial_number === 'string' && s.status_id === 2)
                   .map(s => (
                     <option key={s.id} value={s.serial_number} />
                   ))}
               </datalist>
+              {loadingSerials && (
+                <span className="text-xs text-blue-600 mt-1">Loading circulating serials...</span>
+              )}
+              {!loadingSerials && Array.isArray(serials) && serials.filter(s => s.status_id === 2).length === 0 && (
+                <span className="text-xs text-red-600 mt-1">No circulating serials available.</span>
+              )}
             </div>
             {/* Product Dropdown */}
             <div className="flex flex-col">
@@ -446,8 +507,8 @@ const DamageReportModal = ({ onClose }) => {
                 required
               />
               <datalist id="product-list">
-                {products
-                  .filter(p => p.name.toLowerCase().includes(productInput.toLowerCase()))  
+                {(Array.isArray(products) ? products : [])
+                  .filter(p => typeof p.name === 'string' && p.name.toLowerCase().includes(productInput.toLowerCase()))
                   .map(p => (
                     <option key={p.id} value={p.name} />
                   ))}
@@ -469,8 +530,8 @@ const DamageReportModal = ({ onClose }) => {
                 required
               />
               <datalist id="line-list">
-                {lines
-                  .filter(l => l.name.toLowerCase().includes(lineInput.toLowerCase()))     
+                {(Array.isArray(lines) ? lines : [])
+                  .filter(l => typeof l.name === 'string' && l.name.toLowerCase().includes(lineInput.toLowerCase()))
                   .map(l => (
                     <option key={l.id} value={l.name} />
                   ))}
@@ -496,8 +557,8 @@ const DamageReportModal = ({ onClose }) => {
                 required
               />
               <datalist id="supervisor-list">
-                {supervisors
-                  .filter(s => s.name.toLowerCase().includes(supervisorInput.toLowerCase()))
+                {(Array.isArray(supervisors) ? supervisors : [])
+                  .filter(s => typeof s.name === 'string' && s.name.toLowerCase().includes(supervisorInput.toLowerCase()))
                   .map(s => (
                     <option key={s.id} value={s.name} />
                   ))}
@@ -521,8 +582,8 @@ const DamageReportModal = ({ onClose }) => {
                 required
               />
               <datalist id="operator-list">
-                {operators
-                  .filter(o => o.name.toLowerCase().includes(operatorInput.toLowerCase())) 
+                {(Array.isArray(operators) ? operators : [])
+                  .filter(o => typeof o.name === 'string' && o.name.toLowerCase().includes(operatorInput.toLowerCase()))
                   .map(o => (
                     <option key={o.id} value={o.name} />
                   ))}
@@ -546,8 +607,8 @@ const DamageReportModal = ({ onClose }) => {
               required
             />
             <datalist id="description-dr-list">
-              {descriptionsDr
-                .filter(d => d.name.toLowerCase().includes(descriptionDrInput.toLowerCase()))
+              {(Array.isArray(descriptionsDr) ? descriptionsDr : [])
+                .filter(d => typeof d.name === 'string' && d.name.toLowerCase().includes(descriptionDrInput.toLowerCase()))
                 .map(d => (
                   <option key={d.id} value={d.name} />
                 ))}
@@ -569,8 +630,8 @@ const DamageReportModal = ({ onClose }) => {
                 required
               />
               <datalist id="explanation-list">
-                {explanations
-                  .filter(ex => ex.name.toLowerCase().includes(explanationInput.toLowerCase()))
+                {(Array.isArray(explanations) ? explanations : [])
+                  .filter(ex => typeof ex.name === 'string' && ex.name.toLowerCase().includes(explanationInput.toLowerCase()))
                   .map(ex => (
                     <option key={ex.id} value={ex.name} />
                   ))}

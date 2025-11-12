@@ -12,7 +12,8 @@ export default function ProductCatalog() {
   const [materials, setMaterials] = useState([]);
 
   useEffect(() => {
-    getProducts().then(setData);
+    const token = localStorage.getItem('token');
+    getProducts(token).then(setData);
     getDieDescriptions().then(setDieDescriptions);
     getMaterials().then(setMaterials);
   }, []);
@@ -28,19 +29,21 @@ export default function ProductCatalog() {
   };
 
   const handleSave = async (form) => {
+    const token = localStorage.getItem('token');
     if (editRecord) {
-      await updateProduct(editRecord.id, form);
+      await updateProduct(editRecord.id, form, token);
     } else {
-      await createProduct(form);
+      await createProduct(form, token);
     }
     setModalOpen(false);
     setEditRecord(null);
-    getProducts().then(setData);
+    getProducts(token).then(setData);
   };
 
   const handleToggleActive = async (row) => {
-    await updateProduct(row.id, { is_active: !row.is_active });
-    getProducts().then(setData);
+    const token = localStorage.getItem('token');
+    await updateProduct(row.id, { is_active: !row.is_active }, token);
+    getProducts(token).then(setData);
   };
 
   return (

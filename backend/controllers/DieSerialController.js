@@ -82,7 +82,8 @@ module.exports = {
   async getAll(req, res) {
     try {
       // Check for serial_number filter
-  const { serial_number, page, limit, orderBy, orderDir, statusFilter, status } = req.query;
+      const { serial_number, page, limit, orderBy, orderDir, statusFilter, status } = req.query;
+  // ...existing code...
       if (serial_number) {
         const die = await DieSerial.findBySerialNumber(serial_number);
         if (!die) {
@@ -91,7 +92,8 @@ module.exports = {
         return res.json(die);
       }
       // Otherwise, return all (with optional filters)
-  const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir, statusFilter, status });
+      const serials = await DieSerial.findAll({ page, limit, orderBy, orderDir, statusFilter, status });
+  // ...existing code...
       res.json(serials);
     } catch (error) {
       res.status(500).json({ error: 'Error fetching die serials', details: error.message });
@@ -123,11 +125,15 @@ module.exports = {
   },
   async create(req, res) {
     try {
-      await dieSerialSchema.validate(req.body);
-      const data = req.body;
-      const newSerialId = await DieSerial.create({ ...data, is_active: true });
-      const newSerial = await DieSerial.findById(newSerialId);
-      res.status(201).json(newSerial);
+  await dieSerialSchema.validate(req.body);
+  const data = req.body;
+  // Forzar conversión a número
+  data.inner = Number(data.inner);
+  data.outer = Number(data.outer);
+  data.proudness = Number(data.proudness);
+  const newSerialId = await DieSerial.create({ ...data, is_active: true });
+  const newSerial = await DieSerial.findById(newSerialId);
+  res.status(201).json(newSerial);
     } catch (error) {
       res.status(400).json({ error: 'Validation or creation error', details: error.message });
     }

@@ -51,7 +51,7 @@ class DamageReport {
     const sql = `SELECT id, status_id AS id_status FROM damage_report WHERE status_id = 4 ORDER BY id ASC`;
     return new Promise((resolve, reject) => {
       db.query(sql, (err, results) => {
-        console.log('SQL findOpen results:', results, 'error:', err);
+  // ...existing code...
         db.end();
         if (err) return reject(err);
         resolve(results);
@@ -77,7 +77,7 @@ class DamageReport {
     const sql = `SELECT id, status_id AS id_status FROM damage_report WHERE status_id = 4 ORDER BY id ASC`;
     return new Promise((resolve, reject) => {
       db.query(sql, (err, results) => {
-        console.log('SQL findOpen results:', results, 'error:', err);
+  // ...existing code...
         db.end();
         if (err) return reject(err);
         resolve(results);

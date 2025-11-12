@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BaseTable from '../components/BaseTable';
-import { getLines, updateLine, createLine } from '../services/lineService';
+import { getAllLines, updateLine, createLine } from '../services/lineService';
 import { useNavigate } from 'react-router-dom';
 
 const columns = [
@@ -16,7 +16,7 @@ const LineCatalog = () => {
   const fetchAllLines = async () => {
     try {
       const token = localStorage.getItem('token');
-      const lines = await getLines(token);
+      const lines = await getAllLines(token);
       setData(lines);
     } catch (err) {
       if (err?.response?.status === 403) {

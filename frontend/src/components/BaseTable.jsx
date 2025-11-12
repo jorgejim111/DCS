@@ -8,11 +8,15 @@ import React, { useState } from 'react';
  * - onEdit: función para editar un registro
  * - onToggleActive: función para activar/desactivar un registro
  */
-const BaseTable = ({ columns, data, onEdit, onToggleActive }) => {
+const BaseTable = ({ columns, data, onEdit, onToggleActive, pageSize = 10 }) => {
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState('add'); // 'add' or 'edit'
   const [modalValue, setModalValue] = useState('');
   const [editRow, setEditRow] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  // Paginación
+  const totalPages = Math.ceil(data.length / pageSize);
+  const paginatedData = data.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
   const handleOpenModal = (row) => {
     if (row) {
@@ -51,68 +55,79 @@ const BaseTable = ({ columns, data, onEdit, onToggleActive }) => {
           Add
         </button>
       </div>
-      <table className="min-w-full text-sm text-left">
-        <thead className="bg-[#0C2C65] text-white">
+      <table className="table-auto w-full">
+        <thead>
           <tr>
             {columns.map(col => (
-              <th key={col.key} className="px-4 py-2 font-semibold">{col.label}</th>
+              <th key={col.key} className="px-4 py-2 border">{col.label}</th>
             ))}
-            <th className="px-4 py-2 font-semibold">Acciones</th>
+            <th className="px-4 py-2 border">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          {data.map(row => (
-            <tr key={row.id} className={row.is_active ? '' : 'bg-gray-200'}>
+          {paginatedData.map((row, idx) => (
+            <tr key={row.id || idx}>
               {columns.map(col => (
-                <td key={col.key} className="px-4 py-2 border-b">{row[col.key]}</td>
+                <td key={col.key} className="px-4 py-2 border">{row[col.key]}</td>
               ))}
-              <td className="px-4 py-2 border-b flex gap-2">
+              <td className="px-4 py-2 border">
                 <button
-                  className="bg-[#264893] text-white px-2 py-1 rounded hover:bg-[#23B0E8]"
+                  className="mr-2 bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-700 transition"
                   onClick={() => handleOpenModal(row)}
                 >
-                  Edit
+                  Editar
                 </button>
+                {onToggleActive && (
+                  <button
+                    onClick={() => onToggleActive(row)}
+                    className={`px-3 py-1 rounded font-semibold transition
+                      ${row.is_active
+                        ? 'bg-red-500 hover:bg-red-700 text-white border border-red-700'
+                        : 'bg-green-500 hover:bg-green-700 text-white border border-green-700'}`}
+                  >
+                    {row.is_active ? 'Desactivar' : 'Activar'}
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {/* Controles de paginación */}
+      <div className="flex justify-center items-center mt-4">
+        <button disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)} className="px-2 py-1 mx-1 border rounded">Anterior</button>
+        <span>Página {currentPage} de {totalPages}</span>
+        <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)} className="px-2 py-1 mx-1 border rounded">Siguiente</button>
+      </div>
+      {/* Modal de edición/agregado */}
       {showModal && (
-  <div className="fixed inset-0 bg-gray-200 bg-opacity-0 flex items-center justify-center z-50">
-          <div className="bg-white rounded shadow-lg p-6 min-w-[300px]">
-            <h3 className="text-lg font-bold mb-4">{modalMode === 'edit' ? 'Edit Position' : 'Add Position'}</h3>
-            <label className="block mb-2 text-sm font-semibold text-[#0C2C65]">Name</label>
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50">
+          <div className="bg-white p-6 rounded shadow-lg w-full max-w-md">
+            <h2 className="text-lg font-bold mb-4">{modalMode === 'edit' ? 'Editar' : 'Agregar'} Parte</h2>
             <input
               type="text"
               className="border px-3 py-2 rounded w-full mb-4"
               value={modalValue}
               onChange={e => setModalValue(e.target.value)}
-              placeholder="Enter position name"
+              placeholder="Nombre de la parte"
             />
             <div className="flex gap-2 justify-end">
               <button
                 className="bg-[#23B0E8] text-white px-4 py-2 rounded font-semibold hover:bg-[#0C2C65]"
                 onClick={handleSave}
               >
-                Save
+                Guardar
               </button>
               <button
                 className="bg-gray-300 px-4 py-2 rounded font-semibold hover:bg-gray-400"
                 onClick={handleCloseModal}
               >
-                Cancel
+                Cancelar
               </button>
             </div>
           </div>
         </div>
       )}
-                <button
-                  className={`px-2 py-1 rounded ${row.is_active ? 'bg-red-500 hover:bg-red-700' : 'bg-green-500 hover:bg-green-700'} text-white`}
-                  onClick={() => onToggleActive(row)}
-                >
-                  {row.is_active ? 'Deactivate' : 'Activate'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
     </div>
   );
 };

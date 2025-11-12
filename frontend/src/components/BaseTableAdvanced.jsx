@@ -26,7 +26,7 @@ export default function BaseTableAdvanced({ schema, data, onAdd, onEdit, onToggl
             <tr key={row.id} className="hover:bg-blue-50">
               {columns.map(col => (
                 <td key={col.key} className="border px-4 py-2">
-                  {col.type === 'boolean' ? (row[col.key] ? 'Active' : 'Inactive') : row[col.key]}
+                  {col.key === 'is_active' && row.active_text ? row.active_text : (col.type === 'boolean' ? (row[col.key] ? 'Active' : 'Inactive') : row[col.key])}
                 </td>
               ))}
               <td className="border px-4 py-2 flex gap-2">

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BaseTable from '../components/BaseTable';
-import { getInches, updateInch, createInch } from '../services/inchService';
+import { getAllInches, updateInch, createInch } from '../services/inchService';
 
 const columns = [
   { key: 'name', label: 'Inch Diameter' }
@@ -16,8 +16,8 @@ const InchCatalog = () => {
   const fetchAllInches = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await getInches(token);
-      setData(response);
+  const response = await getAllInches(token);
+  setData(response);
     } catch (err) {
       if (err?.response?.status === 403) {
         navigate('/');

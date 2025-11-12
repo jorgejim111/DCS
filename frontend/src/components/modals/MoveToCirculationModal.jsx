@@ -58,8 +58,17 @@ const MoveToCirculationModal = ({ open, onClose }) => {
         getAllDieSerials({ status: 1 }),
         getAllDieSerials({ status: 7 })
       ]);
-      // Unifica y filtra duplicados
-      const allSerials = [...(Array.isArray(data1.data) ? data1.data : [data1.data]), ...(Array.isArray(data7.data) ? data7.data : [data7.data])];
+      // Ajustar el normalize según la estructura real
+      const normalize = d => {
+        if (!d) return [];
+        if (Array.isArray(d)) return d;
+        if (Array.isArray(d.data)) return d.data;
+        if (typeof d.data === 'object') return [d.data];
+        if (typeof d === 'object') return [d];
+        return [];
+      };
+      const allSerials = [...normalize(data1), ...normalize(data7)];
+      // Filtrar duplicados por serial_number
       const uniqueSerials = Array.from(new Set(allSerials.map(s => s.serial_number)))
         .map(sn => allSerials.find(s => s.serial_number === sn));
       setSerialOptions(uniqueSerials);
@@ -183,6 +192,7 @@ const MoveToCirculationModal = ({ open, onClose }) => {
     setLoading(true);
     try {
       // Update die_serial status_id to 2 (Circulation) y todos los campos actuales
+      const token = localStorage.getItem('token');
       await updateDieSerial(dieId, {
         serial_number: serial,
         die_description_id: dieDescriptionId,
@@ -190,14 +200,14 @@ const MoveToCirculationModal = ({ open, onClose }) => {
         inner: dieInner !== null && dieInner !== undefined && dieInner !== "" ? dieInner : 0,
         outer: dieOuter !== null && dieOuter !== undefined && dieOuter !== "" ? dieOuter : 0,
         proudness: dieProudness !== null && dieProudness !== undefined && dieProudness !== "" ? dieProudness : 0
-      });
+      }, token);
       // 3. Add die_serial_history record
       await createDieSerialHistory({
         die_serial_id: dieId,
         status_id: 2,
         note: "Need be tested by production",
         // Los demás campos se quedan como null/no
-      });
+      }, token);
       setSuccess("Die moved to Circulation and history recorded.");
       setStatus(2);
       if (typeof onClose === 'function') onClose();
@@ -233,6 +243,7 @@ const MoveToCirculationModal = ({ open, onClose }) => {
         return;
       }
       // 2. Actualizar die_serial con todos los campos requeridos
+      const token = localStorage.getItem('token');
       await updateDieSerial(dieId, {
         serial_number: serial,
         die_description_id: dieDescriptionId,
@@ -240,8 +251,14 @@ const MoveToCirculationModal = ({ open, onClose }) => {
         inner: repairData.inner,
         outer: repairData.outer,
         proudness: repairData.proudness
-      });
+      }, token);
       // 3. Insertar en die_serial_history
+      // Extraer id de usuario del token
+      let userId = null;
+      try {
+        const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+        userId = tokenPayload.id;
+      } catch {}
       await createDieSerialHistory({
         die_serial_id: dieId,
         status_id: 2,
@@ -253,8 +270,8 @@ const MoveToCirculationModal = ({ open, onClose }) => {
         outer_land_thickness: repairData.outer,
         damage_report_id: dr.id,
         observed_damage_id: dr.observed_damage_id,
-        performed_by: dr.performed_by, // O usa el usuario de sesión si está disponible
-      });
+        performed_by: userId,
+      }, token);
   setSuccess("Repaired die moved to Circulation and history recorded.");
   setStatus(2);
   setShowRepairModal(false);
@@ -286,11 +303,17 @@ const MoveToCirculationModal = ({ open, onClose }) => {
             autoComplete="off"
           />
           <datalist id="serial-datalist">
-            {serialOptions.map(option => (
-              <option key={option.serial_number + '-' + (option.die_description_id || '')} value={option.serial_number}>
-                {option.serial_number} - {option.die_description_text || option.die_description || ""}
-              </option>
-            ))}
+            {serialOptions
+              .filter(option => (option.status_id === 1 || option.status_id === 7) && option.is_active === 1)
+              .map(option => (
+                <option key={option.serial_number + '-' + (option.die_description_id || '')} value={option.serial_number}>
+                  {option.serial_number} - {option.die_description_text || option.die_description || ""}
+                </option>
+              ))}
+            {/* Mensaje si no hay seriales válidos */}
+            {serialOptions.filter(option => (option.status_id === 1 || option.status_id === 7) && option.is_active === 1).length === 0 && (
+              <option disabled value="">No hay seriales nuevos o para reparar activos disponibles</option>
+            )}
           </datalist>
           <button
             className="bg-[#23B0E8] hover:bg-[#0C2C65] text-white font-semibold px-4 py-2 rounded transition text-lg w-full mb-2 disabled:opacity-60"

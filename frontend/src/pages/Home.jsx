@@ -1,71 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../services/authService';
+import LoginModal from './Login.jsx';
 
-const LoginModal = ({ open, onClose }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
-
-  if (!open) return null;
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    try {
-      const res = await login(username, password);
-  // console.log('Login response:', res); // DEBUG: eliminar en producción
-      const { token, role: rawRole, username: uname } = res;
-      if (!token || !rawRole) {
-        setError('Login failed');
-        return;
-      }
-      localStorage.setItem('token', token);
-      localStorage.setItem('role', rawRole);
-      localStorage.setItem('username', uname || username);
-      const normalizedRole = (rawRole || '').toLowerCase();
-      if (normalizedRole === 'admin') {
-        navigate('/admin');
-      } else if (["gerente", "setupsr", "setup", "production", "produccion"].includes(normalizedRole)) {
-        navigate('/user');
-      } else {
-        setError('No access for this role');
-        return;
-      }
-      onClose();
-    } catch (err) {
-      setError('Invalid credentials or server error');
-      console.log('Login error:', err);
-    }
-  };
-
+const HomeHero = ({ onLoginClick }) => {
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-sm">
-        <h2 className="text-2xl font-bold text-[#0C2C65] mb-4 text-center">Login</h2>
-        <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
-          <input type="text" placeholder="Username" value={username} onChange={e => setUsername(e.target.value)} className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#23B0E8]" />
-          <input type="password" placeholder="Password" value={password} onChange={e => setPassword(e.target.value)} className="border rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#23B0E8]" />
-          <button type="submit" className="bg-[#23B0E8] text-white font-semibold px-4 py-2 rounded hover:bg-[#264893] transition">Login</button>
-        </form>
-        {error && <div className="mt-2 text-red-500 text-center">{error}</div>}
-        <button onClick={onClose} className="mt-4 text-[#264893] hover:underline w-full text-center">Cancel</button>
-      </div>
-    </div>
+    <section className="bg-[#0C2C65] text-white py-16 px-4 text-center">
+      <img src="/logo.jpg" alt="MasterNet Logo" className="mx-auto mb-6 h-34 w-50 rounded shadow-lg" />
+      <p className="text-lg mb-6 max-w-xl mx-auto">
+        Professional solution for die management, damage reporting, and industrial catalog administration.
+      </p>
+      <button onClick={onLoginClick} className="inline-block bg-[#23B0E8] text-white font-semibold px-6 py-3 rounded shadow hover:bg-[#264893] transition">LogIn</button>
+    </section>
   );
 };
-
-const HomeHero = ({ onLoginClick }) => (
-  <section className="bg-[#0C2C65] text-white py-16 px-4 text-center">
-    <img src="/logo.jpg" alt="MasterNet Logo" className="mx-auto mb-6 h-34 w-50 rounded shadow-lg" />
-    <h1 className="text-4xl font-bold mb-4">Welcome to Die Control System</h1>
-    <p className="text-lg mb-6 max-w-xl mx-auto">
-      Professional solution for die management, damage reporting, and industrial catalog administration.
-    </p>
-    <button onClick={onLoginClick} className="inline-block bg-[#23B0E8] text-white font-semibold px-6 py-3 rounded shadow hover:bg-[#264893] transition">LogIn</button>
-  </section>
-);
 
 const HomeFeatures = () => (
   <section className="py-12 px-4 bg-[#F4F6F8]">
@@ -94,12 +41,21 @@ const HomeFooter = () => (
 
 const Home = () => {
   const [loginOpen, setLoginOpen] = useState(false);
+  const navigate = useNavigate();
+  const handleLoginSuccess = (role) => {
+    const normalizedRole = (role || '').toLowerCase();
+    if (normalizedRole === 'admin') {
+      navigate('/admin');
+    } else if (["gerente", "setupsr", "setup", "production", "produccion"].includes(normalizedRole)) {
+      navigate('/user');
+    }
+  };
   return (
     <div>
       <HomeHero onLoginClick={() => setLoginOpen(true)} />
       <HomeFeatures />
       <HomeFooter />
-      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} onSuccess={handleLoginSuccess} />
     </div>
   );
 };

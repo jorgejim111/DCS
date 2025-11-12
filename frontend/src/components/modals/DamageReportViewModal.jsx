@@ -51,28 +51,35 @@ const DamageReportViewModal = ({ open, onClose, id }) => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const serial = res.data;
-        await updateDieSerial(data.die_serial_id, {
-          serial_number: serial.serial_number,
-          die_description_id: serial.die_description_id,
-          status_id: 3,
-          inner: serial.inner == null ? 0 : serial.inner,
-          outer: serial.outer == null ? 0 : serial.outer,
-          proudness: serial.proudness == null ? 0 : serial.proudness
-        });
+        await updateDieSerial(
+          data.die_serial_id,
+          {
+            serial_number: serial.serial_number,
+            die_description_id: serial.die_description_id,
+            status_id: 3,
+            inner: serial.inner == null ? 0 : serial.inner,
+            outer: serial.outer == null ? 0 : serial.outer,
+            proudness: serial.proudness == null ? 0 : serial.proudness
+          },
+          token
+        );
       }
 
       // 3. Registrar historial en die_serial_history con status 3 y nota
       if (data && data.die_serial_id) {
-        await createDieSerialHistory({
-          die_serial_id: data.die_serial_id,
-          status_id: 3, // Scrap
-          note: scrapNote,
-          damage_report_id: id,
-          observed_damage_id: data.description_dr_id,
-          performed_by: data.operator_id,
-          product_id: data.product_id,
-          line_id: data.line_id
-        });
+        await createDieSerialHistory(
+          {
+            die_serial_id: data.die_serial_id,
+            status_id: 3, // Scrap
+            note: scrapNote,
+            damage_report_id: id,
+            observed_damage_id: data.description_dr_id,
+            performed_by: data.operator_id,
+            product_id: data.product_id,
+            line_id: data.line_id
+          },
+          token
+        );
       }
 
       setShowScrapModal(false);
@@ -111,31 +118,38 @@ const DamageReportViewModal = ({ open, onClose, id }) => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const serial = res.data;
-        await updateDieSerial(data.die_serial_id, {
-          serial_number: serial.serial_number,
-          die_description_id: serial.die_description_id,
-          status_id: 7,
-          inner: serial.inner == null ? 0 : serial.inner,
-          outer: serial.outer == null ? 0 : serial.outer,
-          proudness: serial.proudness == null ? 0 : serial.proudness
-        });
+          await updateDieSerial(
+            data.die_serial_id,
+            {
+              serial_number: serial.serial_number,
+              die_description_id: serial.die_description_id,
+              status_id: 7,
+              inner: serial.inner == null ? 0 : serial.inner,
+              outer: serial.outer == null ? 0 : serial.outer,
+              proudness: serial.proudness == null ? 0 : serial.proudness
+            },
+            token
+          );
       }
 
       // 3. Registrar historial en die_serial_history con inner/outer_to_grind y nota
       if (data && data.die_serial_id) {
-        await createDieSerialHistory({
-          die_serial_id: data.die_serial_id,
-          status_id: 7, // To Fix
-          inner_to_grind: parseFloat(innerToGrind) || 0,
-          outer_to_grind: parseFloat(outerToGrind) || 0,
-          note: fixNote,
-          damage_report_id: id,
-          observed_damage_id: data.description_dr_id,
-          performed_by: data.operator_id,
-          product_id: data.product_id,
-          line_id: data.line_id
-          // Los demás campos se insertan como null/no
-        });
+          await createDieSerialHistory(
+            {
+              die_serial_id: data.die_serial_id,
+              status_id: 7, // To Fix
+              inner_to_grind: parseFloat(innerToGrind) || 0,
+              outer_to_grind: parseFloat(outerToGrind) || 0,
+              note: fixNote,
+              damage_report_id: id,
+              observed_damage_id: data.description_dr_id,
+              performed_by: data.operator_id,
+              product_id: data.product_id,
+              line_id: data.line_id
+              // Los demás campos se insertan como null/no
+            },
+            token
+          );
       }
 
       setShowFixModal(false);
@@ -197,29 +211,36 @@ const DamageReportViewModal = ({ open, onClose, id }) => {
           headers: { Authorization: `Bearer ${token}` }
         });
         const serial = res.data;
-        await updateDieSerial(data.die_serial_id, {
-          serial_number: serial.serial_number,
-          die_description_id: serial.die_description_id,
-          status_id: 2,
-          inner: serial.inner == null ? 0 : serial.inner,
-          outer: serial.outer == null ? 0 : serial.outer,
-          proudness: serial.proudness == null ? 0 : serial.proudness
-        });
+        await updateDieSerial(
+          data.die_serial_id,
+          {
+            serial_number: serial.serial_number,
+            die_description_id: serial.die_description_id,
+            status_id: 2,
+            inner: serial.inner == null ? 0 : serial.inner,
+            outer: serial.outer == null ? 0 : serial.outer,
+            proudness: serial.proudness == null ? 0 : serial.proudness
+          },
+          token
+        );
       }
 
       // 3. Registrar historial en die_serial_history
       if (data && data.die_serial_id) {
-        await createDieSerialHistory({
-          die_serial_id: data.die_serial_id,
-          status_id: 2, // Circulation
-          note: goodNote,
-          damage_report_id: id,
-          observed_damage_id: data.description_dr_id,
-          performed_by: data.operator_id, // id usuario
-          product_id: data.product_id,
-          line_id: data.line_id
-          // Los demás campos se insertan como null/no
-        });
+        await createDieSerialHistory(
+          {
+            die_serial_id: data.die_serial_id,
+            status_id: 2, // Circulation
+            note: goodNote,
+            damage_report_id: id,
+            observed_damage_id: data.description_dr_id,
+            performed_by: data.operator_id, // id usuario
+            product_id: data.product_id,
+            line_id: data.line_id
+            // Los demás campos se insertan como null/no
+          },
+          token
+        );
       }
 
       setShowGoodModal(false);

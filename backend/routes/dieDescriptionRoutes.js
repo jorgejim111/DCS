@@ -1,3 +1,4 @@
+
 const express = require('express');
 const router = express.Router();
 const DieDescriptionController = require('../controllers/DieDescriptionController');
@@ -7,6 +8,7 @@ const authorizeRoles = require('../middleware/roleMiddleware');
 
 router.get('/', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr', 'setup'), DieDescriptionController.getAll);
 router.get('/active', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr', 'setup'), DieDescriptionController.getActive);
+router.get('/all', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr', 'setup'), DieDescriptionController.getAllRaw);
 router.get('/:id', authenticateToken, authorizeRoles('admin', 'gerente', 'setupSr', 'setup'), DieDescriptionController.getById);
 router.post('/', authenticateToken, authorizeRoles('admin', 'gerente'), DieDescriptionController.create);
 router.put('/:id', authenticateToken, authorizeRoles('admin', 'gerente'), DieDescriptionController.update);

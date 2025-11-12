@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BaseTable from '../components/BaseTable';
-import { getStatuses, updateStatus, createStatus } from '../services/statusService';
+import { getAllStatuses, updateStatus, createStatus } from '../services/statusService';
 
 const columns = [
   { key: 'name', label: 'Status' }
@@ -16,7 +16,7 @@ const StatusCatalog = () => {
   const fetchAllStatuses = async () => {
     try {
       const token = localStorage.getItem('token');
-      const statuses = await getStatuses(token);
+      const statuses = await getAllStatuses(token);
       setData(statuses);
     } catch (err) {
       if (err?.response?.status === 403) {

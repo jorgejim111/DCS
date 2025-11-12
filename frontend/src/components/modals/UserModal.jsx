@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { getActive } from "../../services/roleService";
+import { getActiveRoles } from "../../services/roleService";
 
 
 export default function UserModal({ open, onClose, onSave, user }) {
@@ -11,7 +11,7 @@ export default function UserModal({ open, onClose, onSave, user }) {
 
   useEffect(() => {
     const fetchRoles = async () => {
-  const res = await getActive();
+  const res = await getActiveRoles();
   setRoles(res);
     };
     fetchRoles();
